@@ -1,0 +1,16 @@
+/* =========================================================================
+   SABIA · HOJA DE ESTILOS (v3) separada por secciones.
+   El orden de importación replica la cascada de la hoja única original.
+   ========================================================================= */
+@import "./01-variables.css";
+@import "./02-base.css";
+@import "./03-encabezado.css";
+@import "./04-componentes.css";
+@import "./05-pantallas.css";
+@import "./07-campesino.css";
+@import "./08-participa.css";
+@import "./06-animaciones.css";
+@import "./09-web.css";
+@import "./10-portada.css";
+@import "./11-kora.css";
+@import "./12-extensiones.css";

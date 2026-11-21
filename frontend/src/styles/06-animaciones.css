@@ -1,0 +1,14 @@
+/* SABIA · 6. Animaciones (extraído sin cambios de la hoja original v3) */
+/* ---------- 6. ANIMACIONES ---------- */
+.contenido.entrada > * { animation: entrada .32s var(--curva) both; }
+.contenido.entrada > *:nth-child(2) { animation-delay: .03s; }
+.contenido.entrada > *:nth-child(3) { animation-delay: .06s; }
+.contenido.entrada > *:nth-child(4) { animation-delay: .09s; }
+.contenido.entrada > *:nth-child(n+5) { animation-delay: .12s; }
+@keyframes entrada { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes subir { from { transform: translateY(100%); opacity: .4; } to { transform: none; opacity: 1; } }
+@keyframes pulso-audio { 0% { box-shadow: 0 0 0 0 rgba(47,89,57,0.45); } 100% { box-shadow: 0 0 0 14px rgba(47,89,57,0); } }
+@keyframes pulso-audio-tierra { 0% { box-shadow: 0 0 0 0 rgba(128,81,48,0.45); } 100% { box-shadow: 0 0 0 14px rgba(128,81,48,0); } }
+@keyframes pulso-claro { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6); } 100% { box-shadow: 0 0 0 14px rgba(255,255,255,0); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+

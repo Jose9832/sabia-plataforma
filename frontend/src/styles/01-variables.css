@@ -1,0 +1,36 @@
+/* SABIA · 1. Variables (extraído sin cambios de la hoja original v3) */
+/* ---------- 1. VARIABLES ---------- */
+:root {
+  /* Superficies (3 niveles de elevación) */
+  --fondo-base: #EFECE6;        /* fondo de la app: piedra/arena */
+  --superficie: #FFFFFF;        /* solo lo que se puede tocar */
+  --superficie-info: #F7F4EE;   /* notas, pistas, contenedores informativos */
+  --linea: #E6DFD3;
+
+  /* Texto (alto contraste para uso al sol) */
+  --texto: #1A1814;
+  --texto-suave: #57504A;
+
+  /* Marca */
+  --verde: #2F5939;
+  --verde-oscuro: #1E3D26;
+  --verde-claro: #E2ECE0;
+  --tierra: #805130;
+  --tierra-clara: #C9A27E;
+  --tierra-suave: #F3E6DA;
+  --arena: #F1ECE4;
+  --azul: #3B5F7D;
+  --morado: #5E5280;
+  --alerta: #B8442A;
+  --alerta-fondo: #FCEAE4;
+  --ambar: #B88A00;
+
+  /* Sombras cálidas (tono tierra, no negro) + borde de luz superior */
+  --luz: inset 0 1px 0 rgba(255,255,255,0.85);
+  --sombra: 0 1px 2px rgba(92,62,32,0.06), 0 6px 16px rgba(92,62,32,0.09), var(--luz);
+  --sombra-fuerte: 0 2px 4px rgba(92,62,32,0.08), 0 14px 30px rgba(92,62,32,0.16), var(--luz);
+  --sombra-presion: 0 1px 3px rgba(92,62,32,0.10), inset 0 1px 0 rgba(255,255,255,0.6);
+
+  --r-xl: 32px; --r-lg: 24px; --r-md: 16px; --r-sm: 12px;
+  --curva: cubic-bezier(.2,.8,.2,1);
+}

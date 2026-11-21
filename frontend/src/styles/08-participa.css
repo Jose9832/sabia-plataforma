@@ -1,0 +1,38 @@
+/* SABIA · 8. Participa y aprende (extraído sin cambios de la hoja original v3) */
+/* ---------- 8. PARTICIPA Y APRENDE ---------- */
+.chip-piloto {
+  align-self: center; margin: -6px 0 14px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  letter-spacing: .3px; color: var(--verde); background: var(--verde-claro); box-shadow: var(--luz);
+}
+.encuentro { display: flex; flex-direction: column; }
+.encuentro-fecha { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+.encuentro-fecha svg { width: 18px; height: 18px; }
+.tipo-encuentro { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
+.encuentro-titulo { display: block; margin-top: 2px; font-size: 17px; font-weight: 800; line-height: 1.3; }
+.encuentro-desc { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: var(--texto-suave); }
+.encuentro .oferta-datos { margin: 12px 0 10px; }
+.encuentro .alerta-pie > span:first-child { display: flex; gap: 6px; flex-wrap: wrap; }
+.caja-derechos { margin-top: 14px; padding: 16px; border-radius: 20px; background: var(--superficie-info); border: 1px solid var(--linea); border-left: 4px solid var(--azul); }
+.caja-derechos-titulo { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; color: var(--azul); }
+.caja-derechos-titulo svg { width: 22px; height: 22px; }
+.caja-derechos ul { margin: 10px 0 0 18px; font-size: 14px; line-height: 1.55; }
+.caja-derechos li + li { margin-top: 6px; }
+.lista-simple { margin: 0 0 0 18px; font-size: 15px; line-height: 1.6; }
+.formulario p { font-size: 15px; line-height: 1.5; }
+.linea-tiempo { position: relative; display: flex; flex-direction: column; gap: 12px; padding-left: 14px; }
+.linea-tiempo::before { content: ""; position: absolute; left: 4px; top: 8px; bottom: 8px; width: 3px; border-radius: 2px; background: #E9CBBE; }
+.hito { position: relative; padding: 14px 16px; border-radius: 18px; background: var(--superficie); box-shadow: var(--sombra); }
+.hito::before { content: ""; position: absolute; left: -16px; top: 18px; width: 11px; height: 11px; border-radius: 50%; background: #8A3B22; box-shadow: 0 0 0 3px var(--fondo-base); }
+.hito-anio { font-size: 12px; font-weight: 800; letter-spacing: .5px; color: #8A3B22; text-transform: uppercase; }
+.hito-cuerpo strong { display: block; font-size: 16px; margin: 2px 0 4px; }
+.hito-cuerpo p { font-size: 14px; line-height: 1.5; color: var(--texto-suave); }
+
+/* Selector de voz */
+.boton-voz {
+  align-self: center; display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 9px 14px; cursor: pointer;
+  border: none; border-radius: 22px; font-size: 13px; color: var(--texto); background: var(--superficie); box-shadow: var(--sombra);
+}
+.boton-voz svg { width: 18px; height: 18px; color: var(--verde); }
+.boton-voz small { font-weight: 700; color: var(--verde); }
+.boton-voz.hablando { background: var(--verde-claro); }
+

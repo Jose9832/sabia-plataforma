@@ -1,0 +1,80 @@
+/* SABIA · 10. Portada con atmósfera territorial (extraído sin cambios de la hoja original v3) */
+/* =========================================================================
+   10. PORTADA CON ATMÓSFERA TERRITORIAL
+   Luz de sol cálida arriba, tejido geométrico sutil y la silueta de la
+   Sierra, la tierra y el río abajo. Todo en código: funciona sin internet.
+   (El tejido es geométrico genérico: no reproduce diseños propios de ninguna comunidad.)
+   ========================================================================= */
+:root {
+  --tejido: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23805130' stroke-opacity='0.07' stroke-width='1.2'%3E%3Cpath d='M16 4 L28 16 L16 28 L4 16 Z'/%3E%3Cpath d='M16 10 L22 16 L16 22 L10 16 Z'/%3E%3Cpath d='M0 0 L4 4 M28 28 L32 32 M32 0 L28 4 M0 32 L4 28'/%3E%3C/g%3E%3C/svg%3E");
+  --sierra: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 120' preserveAspectRatio='none'%3E%3Cpath d='M0 120 V70 L40 48 L75 66 L120 22 L160 58 L200 40 L240 62 L280 18 L325 56 L360 44 L400 60 V120 Z' fill='%232F5939' fill-opacity='0.08'/%3E%3Cpath d='M112 30 L120 22 L128 30 Z M272 26 L280 18 L288 26 Z' fill='%23FFFFFF' fill-opacity='0.7'/%3E%3Cpath d='M0 120 V88 L60 74 L110 90 L170 70 L230 92 L300 76 L360 92 L400 82 V120 Z' fill='%23805130' fill-opacity='0.08'/%3E%3Cpath d='M0 104 C60 96 100 112 160 104 S260 96 320 106 S380 110 400 104' fill='none' stroke='%233B5F7D' stroke-opacity='0.16' stroke-width='2'/%3E%3C/svg%3E");
+  --topo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='white' stroke-opacity='0.16' stroke-width='1.6'%3E%3Cpath d='M100 22 C146 18 182 52 178 98 C174 146 138 182 92 178 C48 174 20 140 24 96 C28 54 58 26 100 22 Z'/%3E%3Cpath d='M102 44 C136 42 160 68 157 100 C154 134 128 158 95 156 C64 154 44 130 46 100 C48 70 72 46 102 44 Z'/%3E%3Cpath d='M101 66 C124 65 139 82 137 102 C135 124 118 138 97 136 C77 134 66 118 68 99 C70 80 84 67 101 66 Z'/%3E%3Cpath d='M100 88 C110 88 117 95 116 104 C115 114 107 119 98 118 C89 117 84 110 85 101 C86 93 92 88 100 88 Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.telefono.sin-ventana {
+  background:
+    var(--sierra) bottom center / 100% 150px no-repeat,
+    radial-gradient(120% 55% at 50% -8%, rgba(255, 210, 140, 0.42) 0%, rgba(255, 232, 196, 0.16) 42%, transparent 70%),
+    radial-gradient(90% 45% at 50% 0%, rgba(226, 236, 220, 0.75), transparent 70%),
+    var(--tejido),
+    var(--fondo-base);
+}
+.telefono.sin-ventana .contenido { background: transparent; }
+
+/* Logo en baldosa clara */
+.puertas .logo {
+  width: 76px; height: 76px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
+  border-radius: 26px; color: var(--verde); background: linear-gradient(145deg, #FFFFFF, #E9EFE6);
+  box-shadow: 0 10px 24px rgba(47, 89, 57, 0.16), inset 0 1px 0 #FFFFFF;
+  animation: flotar 6s ease-in-out infinite;
+}
+.puertas .logo svg { width: 44px; height: 44px; }
+.puertas h1 { color: var(--verde-oscuro); text-shadow: 0 1px 0 rgba(255,255,255,0.8); }
+.puertas .pregunta { font-weight: 800; }
+
+/* Puertas: degradado profundo, relieve topográfico y brillo de luz */
+.puerta {
+  isolation: isolate;
+  box-shadow: 0 4px 10px rgba(45, 30, 15, 0.12), 0 18px 34px rgba(45, 30, 15, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+.puerta.adentro { background: linear-gradient(145deg, #3D7349 0%, #2B5435 55%, #1E3E26 100%); }
+.puerta.afuera  { background: linear-gradient(145deg, #9E673E 0%, #7C4D2B 55%, #5C371D 100%); }
+.puerta::before {
+  content: ""; position: absolute; z-index: -1; right: -70px; bottom: -80px; width: 260px; height: 260px;
+  background: var(--topo) center / contain no-repeat; pointer-events: none; transition: transform .6s var(--curva);
+}
+.puerta::after {
+  content: ""; position: absolute; z-index: -1; inset: 0; width: auto; height: auto; border-radius: inherit;
+  right: auto; bottom: auto; pointer-events: none;
+  background: radial-gradient(70% 60% at 0% 0%, rgba(255, 255, 255, 0.16), transparent 60%);
+}
+.puerta:hover::before { transform: rotate(8deg) scale(1.04); }
+
+/* Íconos en contenedor de cristal */
+.puerta .grande {
+  width: 68px; height: 68px; flex-shrink: 0; border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.30);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  transition: transform .25s var(--curva);
+}
+.puerta .grande svg { width: 38px; height: 38px; }
+.puerta:hover .grande { transform: translateY(-3px); }
+.puerta strong { letter-spacing: -0.3px; }
+.puerta small { opacity: .93; padding-right: 18px; }
+.puerta .escuchar { background: rgba(255, 255, 255, 0.94); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16); }
+.puertas .pie { font-weight: 600; }
+.boton-voz { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(6px); }
+@keyframes flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+@media (min-width: 821px) {
+  .telefono.sin-ventana { background-size: 100% 220px, auto, auto, auto, auto; }
+  .puertas .logo { width: 92px; height: 92px; border-radius: 30px; }
+  .puertas .logo svg { width: 54px; height: 54px; }
+  .puerta .grande { width: 84px; height: 84px; border-radius: 26px; }
+  .puerta .grande svg { width: 46px; height: 46px; }
+  .puerta::before { width: 340px; height: 340px; right: -90px; bottom: -110px; }
+  .telefono.sin-ventana .pie-web { background: transparent; }
+}
+.puerta strong { padding-right: 44px; }
+

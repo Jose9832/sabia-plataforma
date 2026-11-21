@@ -1,0 +1,10 @@
+/* =========================================================================
+   12. EXTENSIONES DE LA VERSIÓN FULL-STACK
+   Lo único nuevo respecto al prototipo: el contador de envíos que esperan
+   señal (cola offline) junto al indicador de red.
+   ========================================================================= */
+.contador-cola {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #6B4E00; background: #FFF4D6;
+}
