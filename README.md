@@ -1,4 +1,4 @@
-﻿# SABIA · Saberes vivos
+# SABIA · Saberes vivos
 
 **S**aberes, **A**ncestralidad, **B**ioculturalidad e **I**nteligencia **A**rticulada.
 
