@@ -1,0 +1,54 @@
+# SABIA · levanta todo con:  docker compose up -d --build
+#   Frontend (PWA):  http://localhost:8080
+#   API + docs:      http://localhost:8000/api/docs
+#   PostgreSQL:      localhost:5432
+name: sabia
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sabia
+      POSTGRES_USER: sabia
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sabia_local}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sabia -d sabia"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://sabia:${POSTGRES_PASSWORD:-sabia_local}@db:5432/sabia
+      SECRET_KEY: ${SECRET_KEY:-cambia-esta-clave-en-produccion}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-43200}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+      SEED_ON_START: ${SEED_ON_START:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8000}:8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  pgdata:

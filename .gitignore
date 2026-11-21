@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node / Vite
+node_modules/
+dist/
+dev-dist/
+*.tsbuildinfo
+.vite/
+
+# Variables de entorno (nunca subir secretos)
+.env
+.env.*
+!.env.example
+
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
