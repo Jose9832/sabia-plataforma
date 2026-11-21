@@ -1,4 +1,4 @@
-# SABIA · Saberes vivos
+﻿# SABIA · Saberes vivos
 
 **S**aberes, **A**ncestralidad, **B**ioculturalidad e **I**nteligencia **A**rticulada.
 
@@ -59,7 +59,7 @@ Plataforma intercultural para comunidades **indígenas, afrodescendientes y camp
 1. Clona el repositorio:
 
    ```bash
-   git clone https://github.com/<tu-usuario>/sabia-plataforma.git
+   git clone https://github.com/Jose9832/sabia-plataforma.git
    cd sabia-plataforma
    ```
 
