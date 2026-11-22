@@ -1,300 +1,223 @@
-# SABIA · Saberes vivos
+# ALUNA IA · SABIA & CEIBA
 
-**S**aberes, **A**ncestralidad, **B**ioculturalidad e **I**nteligencia **A**rticulada.
+**Plataforma de diálogo de saberes de la Universidad del Magdalena** (Acuerdo Superior N.º 06 del 30 de abril de 2026).
 
-Plataforma intercultural para comunidades **indígenas, afrodescendientes y campesinas** de la Sierra Nevada y el Magdalena. Funciona **sin internet** (offline-first), lee en voz alta, entiende el dictado por voz e incluye a **Kora**, una guía que responde sin conexión.
-
-> Piloto · Universidad del Magdalena
+- **SABIA** guarda y gobierna los saberes de cada comunidad: lectura *pública, comunitaria, restringida o privada*, custodia territorial por comunidad y publicación por **consenso** cuando un saber pertenece a varias comunidades.
+- **CEIBA** consulta y transforma con IA **solo lo autorizado**, siempre con citas, sin inventar y sin hablar en nombre de ninguna comunidad.
+- **Salud SABIA** (módulo de Bienestar) acompaña a comunidades indígenas, afrodescendientes y campesinas: primeros auxilios, plantas, partería, rutas de derechos, alertas veredales, cuaderno de cuentas, lectura en voz alta, dictado y la guía **Kora**. Funciona **sin internet** y sus datos están **aislados** del repositorio cultural y de Ceiba.
 
 ---
 
 ## Tabla de contenido
 
-1. [Arquitectura](#arquitectura)
-2. [Requisitos](#requisitos)
-3. [Levantar todo con Docker (recomendado)](#levantar-todo-con-docker-recomendado)
-4. [Cuentas de prueba](#cuentas-de-prueba)
-5. [Desarrollo local sin Docker](#desarrollo-local-sin-docker)
-6. [Cómo funciona el modo sin conexión](#cómo-funciona-el-modo-sin-conexión)
-7. [Gobernanza de datos](#gobernanza-de-datos)
-8. [API REST](#api-rest)
-9. [Base de datos y migraciones](#base-de-datos-y-migraciones)
-10. [Pruebas](#pruebas)
-11. [Estructura del repositorio](#estructura-del-repositorio)
-12. [Despliegue a producción](#despliegue-a-producción)
+1. [Arquitectura y carpetas](#arquitectura-y-carpetas)
+2. [Levantar todo con Docker](#levantar-todo-con-docker)
+3. [Perfiles de demostración](#perfiles-de-demostración)
+4. [Los 7 escenarios de evaluación](#los-7-escenarios-de-evaluación)
+5. [Gobernanza y permisos](#gobernanza-y-permisos)
+6. [Funcionamiento sin conexión](#funcionamiento-sin-conexión)
+7. [API REST v1](#api-rest-v1)
+8. [Desarrollo sin Docker](#desarrollo-sin-docker)
+9. [Pruebas](#pruebas)
+10. [Producción](#producción)
 
 ---
 
-## Arquitectura
+## Arquitectura y carpetas
+
+El proyecto está separado en **tres carpetas independientes**, cada una con su propio Dockerfile:
 
 ```
-┌──────────────────────────────┐        ┌─────────────────────────┐       ┌──────────────┐
-│ Frontend · PWA               │  /api  │ Backend · FastAPI       │  SQL  │ PostgreSQL 16│
-│ React + Vite + TypeScript    │ ─────► │ routers → services →    │ ────► │ (volumen     │
-│ Service Worker (Workbox)     │        │ models (SQLAlchemy 2)   │       │  pgdata)     │
-│ IndexedDB: caché + cola      │ ◄───── │ JWT · bcrypt · Pydantic │       │              │
-│ Web Speech API · Kora        │  JSON  │ Alembic · seed.py       │       │              │
-└──────────────────────────────┘        └─────────────────────────┘       └──────────────┘
-        nginx :8080                              uvicorn :8000                  :5432
+sabia-plataforma/
+├── frontend/   React 19 + Vite + TypeScript + Tailwind (diseño institucional ALUNA) · PWA
+│   └── src/
+│       ├── screens/            Bienvenida, Biblioteca, Comunidades, Mi Territorio, Laboratorio Ceiba,
+│       │                       Panel de Custodia, Aportar saber, Permisos, Solicitudes, Perfil, Bienestar…
+│       ├── context/AlunaContext.tsx   Estado conectado a la API (optimista + cola offline)
+│       ├── domain/authorization.ts    Reglas de permisos (la interfaz las refleja; el servidor decide)
+│       ├── services/apiClient.ts      Cliente HTTP + cola de envíos sin señal
+│       └── modules/salud/             Módulo de Salud SABIA (estilos aislados bajo .sabia-modulo)
+├── backend/    Python 3.12 + FastAPI + SQLAlchemy 2 + Pydantic + JWT/bcrypt
+│   └── app/
+│       ├── routers/aluna.py           /api/v1 (auth, saberes, custodia, Ceiba, bienestar)
+│       ├── routers/{contenido,finca,participa}.py   /api/v1/salud (módulo de Salud)
+│       ├── domain/autorizacion.py     Gobernanza del lado del servidor (espejo de authorization.ts)
+│       ├── domain/ceiba.py            Consulta con citas, anti prompt-injection, transformación
+│       ├── services/ · models/ · schemas/ · core/ · seed.py
+├── database/   PostgreSQL 16: migraciones (Alembic), semillas, esquema, RLS y respaldos
+├── docs/       Guía de integración del equipo, reporte final y README del prototipo original
+└── docker-compose.yml
 ```
 
-| Capa | Tecnología |
+```
+ Navegador (PWA)                 backend (FastAPI)                     database (PostgreSQL 16)
+ ┌────────────────────┐  /api   ┌────────────────────────────┐  SQL   ┌──────────────────────────┐
+ │ ALUNA + Salud SABIA│ ──────► │ autoriza → recupera → cita │ ─────► │ users · communities ·    │
+ │ Service Worker     │ ◄────── │ JWT · bcrypt · auditoría   │        │ knowledges · approvals · │
+ │ caché + cola local │  JSON   │ Ceiba determinista (sin    │        │ ai_generations · salud…  │
+ └────────────────────┘         │ proveedores externos)      │        └──────────────────────────┘
+       nginx :8080                     uvicorn :8000                         :5432
+```
+
+---
+
+## Levantar todo con Docker
+
+Requisito: **Docker Desktop**.
+
+```bash
+git clone https://github.com/Jose9832/sabia-plataforma.git
+cd sabia-plataforma
+docker compose up -d --build
+```
+
+| Servicio | URL |
 |---|---|
-| Frontend | React 18, Vite 6, TypeScript (estricto), zustand, vite-plugin-pwa |
-| Backend | Python 3.12, FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, passlib/bcrypt, PyJWT |
-| Base de datos | PostgreSQL 16 |
-| Infraestructura | Docker Compose (db + backend + frontend con nginx) |
+| Aplicación web (PWA) | http://localhost:8080 |
+| Documentación interactiva de la API | http://localhost:8000/api/docs |
+| Chequeo de salud | http://localhost:8000/api/v1/health |
+| PostgreSQL | `localhost:5432` · base `sabia` · usuario `sabia` |
 
----
-
-## Requisitos
-
-- **Docker Desktop** (con Docker Compose v2). Es lo único necesario para correr todo.
-- Opcional, para desarrollar sin Docker: **Node.js 20+** y **Python 3.12+**.
-
----
-
-## Levantar todo con Docker (recomendado)
-
-1. Clona el repositorio:
-
-   ```bash
-   git clone https://github.com/Jose9832/sabia-plataforma.git
-   cd sabia-plataforma
-   ```
-
-2. (Opcional) Copia las variables de entorno y cámbialas. Si no lo haces, se usan valores de desarrollo:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   > En producción cambia **siempre** `SECRET_KEY` y `POSTGRES_PASSWORD`.
-
-3. Construye y levanta los tres servicios con un solo comando:
-
-   ```bash
-   docker compose up -d --build
-   ```
-
-   Al arrancar, el backend aplica las migraciones de Alembic y ejecuta `seed.py`, que carga los datos de ejemplo del prototipo (usuarios, relatos, hospitales, plantas, encuentros, investigaciones, semillas y alertas). La carga es idempotente: no duplica nada si reinicias.
-
-4. Abre la aplicación:
-
-   | Servicio | URL |
-   |---|---|
-   | Aplicación web (PWA) | http://localhost:8080 |
-   | Documentación interactiva de la API | http://localhost:8000/api/docs |
-   | Chequeo de salud | http://localhost:8000/api/salud |
-   | PostgreSQL | `localhost:5432` · base `sabia` · usuario `sabia` |
-
-Comandos útiles:
+Al arrancar, el backend aplica las migraciones de `database/migrations` y carga `database/seeds` (sin duplicar).
 
 ```bash
-docker compose ps                 # estado de los servicios
-docker compose logs -f backend    # ver los registros de la API
+docker compose ps                 # estado
+docker compose logs -f backend    # registros de la API
 docker compose down               # detener (los datos se conservan)
-docker compose down -v            # detener y BORRAR la base de datos (vuelve a sembrarse al subir)
+docker compose down -v            # detener y borrar la base (vuelve a sembrarse al subir)
 ```
+
+Variables opcionales: copia `.env.example` a `.env` en la raíz (contraseña de Postgres, `SECRET_KEY`, puertos, `ENABLE_DEMO_PROFILES`).
 
 ---
 
-## Cuentas de prueba
+## Perfiles de demostración
 
-| Comunidad | Número de identificación | Contraseña |
+Se cambian desde el menú de usuario (arriba a la derecha) o se inicia sesión con correo y la contraseña **`aluna2026`**.
+
+| Perfil | Correo | Qué demuestra | Salud SABIA |
+|---|---|---|---|
+| Sofía Ramos · Visitante | `sofia.ramos@correo.com` | Solo ve saberes públicos | Puerta *Conocer* |
+| Carlos Mendoza · Investigador | `cmendoza@unimagdalena.edu.co` | Filiación **pendiente**: solicita accesos y propone saberes | Puerta *Conocer* |
+| Aura Villafaña · Integrante Sierra Nevada | `aura.villafana@sierra-nevada.org` | Lee lo comunitario, consulta a Ceiba, transforma para enseñar | Versión indígena |
+| Mamo Senen · Custodio Sierra Nevada | `custodia.sierra@alunaia.co` | Aprueba solo trámites de **su** comunidad | Versión indígena |
+| Faustina Palacios · Custodia Afrocaribe | `custodia.afro@alunaia.co` | Frontera de autoridad (no decide sobre Sierra) | Versión afro |
+| Patrón Marino · Custodio Taganga | `pesca.taganga@alunaia.co` | Co-aprueba el saber mancomunado | Versión territorial/campesina |
+
+Desde el registro también se pueden crear cuentas reales: la vinculación a una comunidad queda **pendiente** hasta que su custodia la apruebe.
+
+---
+
+## Los 7 escenarios de evaluación
+
+| # | Escenario | Cómo probarlo |
 |---|---|---|
-| Indígena | `1001` | `sabia123` |
-| Afrodescendiente | `2001` | `sabia123` |
-| Campesina | `3001` | `sabia123` |
-
-También puedes crear una cuenta nueva desde **Mi comunidad → elige tu comunidad → Regístrate**. Las contraseñas se guardan con hash **bcrypt**; la sesión usa un **JWT** de 30 días para que la app siga funcionando en el campo sin señal.
-
----
-
-## Desarrollo local sin Docker
-
-### Backend
-
-```bash
-# 1. Solo la base de datos en Docker
-docker compose up -d db
-
-# 2. Entorno de Python
-cd backend
-python -m venv .venv
-# Windows: .venv\Scripts\activate    ·    Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-
-# 3. Migraciones, datos de ejemplo y servidor con recarga automática
-alembic upgrade head
-python -m app.seed
-uvicorn app.main:app --reload --port 8000
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-cp .env.example .env
-npm run dev          # http://localhost:5173  (Vite reenvía /api a http://localhost:8000)
-```
-
-Otros comandos: `npm run build` (compila la PWA en `dist/`), `npm run preview`, `npm run typecheck`.
-
-> **Sin Node instalado:** puedes compilar el frontend dentro de Docker con `docker compose build frontend`.
+| 1 | Laboratorio dinámico | Aura → Ceiba IA: alterna *Terrazas*, *Cantos de Boga* y *Vientos y Mareas*; cambian preguntas, citas y materiales |
+| 2 | Identidades y permisos | Cambia de perfil: la Biblioteca y la Matriz de Permisos se recalculan con lo que devuelve el servidor |
+| 3 | Aporte externo y solicitud | Carlos solicita acceso a *Terrazas* → Mamo Senen lo otorga en el Panel de Custodia → Carlos ya puede leerlo |
+| 4 | Frontera de autoridad | Faustina intenta resolver trámites de Sierra Nevada: el servidor responde 403 |
+| 5 | Bloqueo soberano de IA | *Acuerdos internos* (privado, IA no permitida): Ceiba se niega con `AI_NOT_ALLOWED` |
+| 6 | Consenso intercomunitario | *Cuencas compartidas* (Sierra + Taganga) se publica solo cuando Patrón Marino también aprueba |
+| 7 | Derivados pedagógicos | *Transformar para enseñar* crea un borrador que solo la custodia titular puede aprobar |
 
 ---
 
-## Cómo funciona el modo sin conexión
+## Gobernanza y permisos
 
-SABIA está pensada para veredas y resguardos donde la señal va y viene.
-
-1. **La aplicación se instala** (PWA): el Service Worker de Workbox guarda HTML, JS, CSS e íconos. La app abre aunque no haya internet y se puede “Agregar a la pantalla de inicio”.
-2. **Lectura sin señal:** cada consulta a la API se guarda en **IndexedDB** (`src/lib/api.ts`). Sin conexión, la app muestra la última copia. En el primer uso sin red muestra los datos de ejemplo de `datos/semilla.json`. Las guías (primeros auxilios, trámites, historia afro, partería…) viajan dentro de la app.
-3. **Escritura sin señal:** todo lo que la persona crea —**alertas, reportes de derechos, trueques, semillas, gastos del cuaderno, inscripciones, solicitudes de investigación y podcasts**— entra primero a una **cola en IndexedDB** con un UUID (`src/lib/cola.ts`) y aparece de inmediato en pantalla como *“Esperando señal”*.
-4. **Sincronización automática:** al recuperar la conexión (evento `online`, el botón *En línea / Sin conexión* del encabezado o un reintento cada 30 s), la cola se envía completa a **`POST /api/sync`**. El servidor:
-   - procesa cada operación en su propio *SAVEPOINT* (si una falla, las demás se guardan);
-   - usa el UUID como `client_id` único, así que **un reenvío nunca duplica** registros;
-   - marca cada registro con su estado de sincronización (`origen = en_linea | cola_offline`, `creado_en_cliente`, `sincronizado_en`).
-5. El encabezado muestra un contador con los envíos pendientes.
-
-**Para probarlo:** entra como `3001`, toca **En línea** para pasar a **Sin conexión**, da una alerta en *Mi finca → Alertas* y vuelve a tocar el indicador: verás *“Hay señal: se enviaron 1 envío(s) guardado(s)”* y la alerta pasa a *Enviada*.
-
-> El Service Worker se registra en navegadores reales (Chrome, Edge, Firefox, Safari) sobre `localhost` o HTTPS. Revísalo en *DevTools → Application → Service Workers*.
+- **Identidad ≠ pertenencia ≠ custodia.** Ser investigador no da acceso comunitario; una filiación *pendiente* no cuenta; un custodio solo decide sobre su comunidad. No existe un "administrador cultural universal".
+- **El servidor decide.** `backend/app/domain/autorizacion.py` replica `frontend/src/domain/authorization.ts` y se aplica en cada endpoint. Lo que no puedes leer viaja **sin contenido** (solo título y descripción), así que no se filtra por la API.
+- **Ceiba** autoriza antes de recuperar, neutraliza instrucciones incrustadas en las fuentes (*prompt injection*), responde con citas o se niega con un motivo (`NO_READ_PERMISSION`, `AI_NOT_ALLOWED`, `AI_PERMISSION_REVOKED`, `NO_EVIDENCE`, `PROMPT_INJECTION_BLOCKED`). Las claves de proveedores de IA, si algún día se usan, van solo en `backend/.env`, nunca en `VITE_*`.
+- **Trazabilidad:** cada decisión de custodia, permiso de IA y consulta queda en `audit_events`.
+- **Salud aislada:** el módulo de Bienestar usa `/api/v1/salud` y sus propias tablas; nada de salud entra al repositorio de saberes ni a Ceiba (minimización de datos, Ley 1581 de 2012). La versión del módulo depende de la membresía **verificada** (Sierra → indígena, Afro → afro, campesinos/pescadores/palafitos → territorial).
+- **RLS opcional:** `database/schema/politicas_rls.sql` añade una segunda barrera en PostgreSQL para quien se conecte directo a la base.
 
 ---
 
-## Gobernanza de datos
+## Funcionamiento sin conexión
 
-Cada comunidad decide qué comparte. Los relatos, podcasts, encuentros e historias tienen una bandera de **visibilidad**:
+1. **La app se instala (PWA):** el Service Worker guarda HTML, JS, CSS, logos y retratos; las fotos del territorio se guardan al verlas.
+2. **Lectura:** ALUNA guarda la última copia del estado del servidor; el módulo de Salud guarda cada consulta en IndexedDB y trae un respaldo para el primer uso sin señal.
+3. **Escritura:** solicitudes, aprobaciones, aportes, derivados IA, alertas, reportes, trueques y gastos se aplican al instante en pantalla y, si no hay señal, quedan en una **cola local**. Al volver la conexión se envían solos (el menú de usuario muestra cuántos están *en cola*). Cada envío lleva un id generado en el teléfono, así que **nunca se duplica**.
+4. **Ceiba sin señal:** responde el motor local de respaldo, solo sobre fuentes ya autorizadas en el teléfono, y marca la respuesta como de respaldo.
 
-- `adentro` → **Solo comunidad**: lo ven únicamente las personas de esa comunidad, con sesión.
-- `afuera` → **Compartido**: la comunidad autorizó mostrarlo en la puerta **Conocer**.
-
-El filtro se aplica **en el servidor** (`?ventana=adentro` exige JWT y filtra por la comunidad de la cuenta; `?ventana=afuera` solo devuelve lo compartido). Los reportes de derechos solo los recibe la autoridad de la comunidad (cabildo, consejo comunitario o Junta de Acción Comunal), y Mi finca solo está disponible para la comunidad campesina.
+> El Service Worker se registra en navegadores reales (Chrome, Edge, Firefox, Safari) sobre `localhost` o HTTPS. Revísalo en *DevTools → Application*.
 
 ---
 
-## API REST
+## API REST v1
 
-Documentación completa y probador en **http://localhost:8000/api/docs**.
+Documentación completa en **http://localhost:8000/api/docs**.
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| `POST` | `/api/auth/registro` | Crear cuenta (nombre, identificación, contraseña, comunidad) |
-| `POST` | `/api/auth/login` | Ingresar; valida que la cuenta sea de la comunidad elegida |
-| `GET` | `/api/auth/yo` | Datos de la sesión |
-| `GET` | `/api/relatos?ventana=` | Relatos de los mayores (gobernanza adentro/afuera) |
-| `GET/POST` | `/api/podcasts` | Podcasts de YouTube/Spotify conectados por la comunidad |
-| `GET` | `/api/lugares?categoria=hospital\|rural` | Hospitales y puestos de salud rurales |
-| `GET` | `/api/plantas?comunidad=` | Botiquín de plantas |
-| `GET` | `/api/historias` | Historias de quién hace cada producto |
-| `GET` | `/api/encuentros?ventana=` | Conversatorios, capacitaciones y reuniones |
-| `POST` | `/api/encuentros/{id}/inscripcion` | Inscribirse a un encuentro |
-| `GET` | `/api/investigaciones` | Investigaciones con la comunidad |
-| `POST` | `/api/investigaciones/{id}/participar` | Participar (consentimiento informado) |
-| `GET` | `/api/mis-registros` | Inscripciones, investigaciones y trueques propios |
-| `GET/POST` | `/api/semillas` | Banco de semillas · `POST /api/semillas/{id}/trueque` |
-| `GET/POST` | `/api/alertas` | Alertas veredales (con foto) |
-| `GET/PATCH` | `/api/cuentas` | Cuaderno de cuentas · `POST/DELETE /api/cuentas/gastos` · `POST /api/cuentas/reiniciar` |
-| `POST` | `/api/reportes` | Reporte de derechos · `GET /api/reportes/mios` |
-| `POST` | `/api/sync` | **Cola offline**: recibe y procesa operaciones guardadas sin señal |
-
-Ejemplo de sincronización:
-
-```json
-POST /api/sync
-Authorization: Bearer <token>
-{
-  "operaciones": [
-    { "id": "6f1c…", "tipo": "alerta", "creado_en": "2026-11-21T15:00:00Z",
-      "datos": { "tipo": "derrumbe", "lugar": "Puente de la quebrada", "nota": "No pasan carros" } },
-    { "id": "a9d2…", "tipo": "gasto",
-      "datos": { "client_id": "c8c0…", "tipo": "Abono", "monto": 50000, "cultivo": "Café" } }
-  ]
-}
-```
-
-Tipos admitidos: `podcast`, `semilla`, `trueque`, `alerta`, `reporte`, `gasto`, `gasto_borrar`, `cuaderno`, `cuentas_reiniciar`, `inscripcion`, `investigacion`.
+| `POST` | `/api/v1/auth/login` · `/auth/register` · `/auth/demo/{perfil}` · `/auth/logout` | Sesión (JWT, contraseñas con bcrypt) |
+| `GET` | `/api/v1/me` · `/api/v1/bootstrap` | Persona actual · estado inicial filtrado por permisos |
+| `GET` | `/api/v1/communities` · `/communities/{id}` | Comunidades y políticas |
+| `GET/POST` | `/api/v1/knowledges` · `/knowledges/{id}` | Catálogo, detalle (sin contenido si no hay permiso) y aportes |
+| `POST` | `/api/v1/knowledges/{id}/access-requests` | Solicitar acceso a la custodia |
+| `POST` | `/api/v1/knowledges/{id}/decisions` | Aprobar o rechazar **por comunidad** (consenso) |
+| `GET` | `/api/v1/access-requests/me` · `/custody/review-queue` | Mis solicitudes · bandeja del custodio |
+| `POST` | `/api/v1/access-requests/{id}/decisions` | Otorgar o declinar (crea `access_grant`) |
+| `POST` | `/api/v1/affiliations` · `/affiliations/{id}/decisions` | Vinculación comunitaria |
+| `POST` | `/api/v1/permissions/{id}/grant-ai` · `/permissions/{id}/revoke` | Habilitar o revocar IA |
+| `POST` | `/api/v1/ai/query` · `/ai/transform` · `/ai/outputs` | Ceiba: consulta con citas, transformación, derivados |
+| `POST` | `/api/v1/ai/outputs/{id}/decisions` | Custodia aprueba o rechaza un derivado |
+| `GET/POST` | `/api/v1/wellness/channels` · `/wellness/orientations` | Bienestar (aislado) |
+| `*` | `/api/v1/salud/...` | Módulo de Salud SABIA (relatos, lugares, plantas, finca, alertas, reportes, `POST /salud/sync`) |
+| `POST` | `/api/v1/demo/reset` | Restablece la demostración (solo con perfiles demo activos) |
 
 ---
 
-## Base de datos y migraciones
-
-Modelos (en `backend/app/models/`): `Usuario`, `Relato`, `Podcast`, `Lugar`, `Planta`, `HistoriaProducto`, `Encuentro`, `Inscripcion`, `Investigacion`, `SolicitudInvestigacion`, `SemillaTrueque`, `SolicitudTrueque`, `AlertaVeredal`, `ReporteDerechos`, `GastoCosecha` y `CuadernoCosecha`.
+## Desarrollo sin Docker
 
 ```bash
-# Crear una migración nueva después de cambiar un modelo
-docker compose exec backend alembic revision --autogenerate -m "describe el cambio"
-docker compose exec backend alembic upgrade head
+# Base de datos
+docker compose up -d db
 
-# Volver a cargar los datos de ejemplo desde cero
-docker compose down -v && docker compose up -d --build
+# Backend
+cd backend
+python -m venv .venv && .venv\Scripts\activate      # Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+alembic -c ../database/alembic.ini upgrade head
+python -m app.seed
+uvicorn app.main:app --reload --port 8000
+
+# Frontend (otra terminal)
+cd frontend
+npm install
+cp .env.example .env
+npm run dev            # http://localhost:5173  (Vite reenvía /api al backend)
 ```
-
-Los datos de ejemplo viven en **`datos/semilla.json`**: los usa `seed.py` para poblar PostgreSQL y el frontend como respaldo del primer uso sin señal.
 
 ---
 
 ## Pruebas
 
 ```bash
-# Backend (pruebas unitarias)
+# Backend: 18 pruebas (permisos, Ceiba, anti-inyección, validaciones)
 docker compose run --rm --no-deps --entrypoint "python -m pytest -q" backend
-# o, en local:  cd backend && pytest -q
 
-# Frontend (verificación de tipos y compilación)
-cd frontend && npm run typecheck && npm run build
+# Frontend: 16 pruebas de gobernanza + tipos + compilación
+cd frontend && npm test && npm run typecheck && npm run build
 ```
+
+Las pruebas del backend usan los mismos datos demo que las del frontend, para garantizar que la interfaz y el servidor deciden igual.
 
 ---
 
-## Estructura del repositorio
+## Producción
 
-```
-sabia-plataforma/
-├── docker-compose.yml          # db + backend + frontend
-├── .env.example                # variables de Compose
-├── datos/semilla.json          # datos de ejemplo compartidos
-├── backend/
-│   ├── Dockerfile · entrypoint.sh · requirements.txt · .env.example
-│   ├── alembic.ini · alembic/versions/0001_esquema_inicial_de_sabia.py
-│   ├── tests/
-│   └── app/
-│       ├── main.py             # aplicación FastAPI, CORS y manejo de errores
-│       ├── core/               # config, database, security (JWT + bcrypt), deps
-│       ├── models/             # SQLAlchemy
-│       ├── schemas/            # Pydantic (validación y respuestas)
-│       ├── services/           # reglas de negocio y sincronización
-│       ├── routers/            # endpoints REST
-│       └── seed.py
-└── frontend/
-    ├── Dockerfile · nginx.conf · vite.config.ts · .env.example
-    └── src/
-        ├── styles/             # hoja original separada por secciones (01-variables … 11-kora)
-        ├── components/icons/   # íconos SVG como componentes (<Icono nombre="salud" />)
-        ├── components/         # encabezado, Kora, piezas comunes
-        ├── views/              # puertas, acceso, inicio, salud, memoria, ayuda, finca, participa…
-        ├── state/store.ts      # navegación, sesión, red, datos y cola (zustand)
-        ├── lib/                # api, IndexedDB, cola offline, voz, Kora, utilidades
-        └── data/               # contenido de referencia, tipos y respaldo offline
-```
+- Define `SECRET_KEY`, `POSTGRES_PASSWORD` y `CORS_ORIGINS` reales y pon `ENABLE_DEMO_PROFILES=false` (oculta el selector de perfiles y desactiva `/auth/demo` y `/demo/reset`).
+- Sirve por **HTTPS** (necesario para el Service Worker, el micrófono y la instalación de la PWA).
+- `SEED_ON_START=false` si no quieres los datos de ejemplo.
+- Respaldos: `.\database\scripts\respaldar.ps1` y `.\database\scripts\restaurar.ps1`.
 
 ---
 
-## Despliegue a producción
+## Cuidado cultural y alcance
 
-- Define `SECRET_KEY`, `POSTGRES_PASSWORD` y `CORS_ORIGINS` reales en `.env`.
-- Sirve la aplicación por **HTTPS** (requisito para el Service Worker, el micrófono y la PWA instalable fuera de `localhost`).
-- Pon `SEED_ON_START=false` si no quieres los datos de ejemplo.
-- Si la API vive en otro dominio, compila el frontend con `VITE_API_URL=https://api.tu-dominio` (argumento de construcción en `frontend/Dockerfile`).
-
----
-
-## Créditos y cuidado cultural
-
-- Los símbolos de síntomas son **provisionales** y se definirán con la comunidad; las etiquetas en lengua propia se mostrarán cuando esté lista la base lingüística.
-- El conocimiento de plantas es tradicional, está **pendiente de validación** con mayores y sabedoras y **no reemplaza la consulta médica**.
-- El tejido geométrico de la portada es genérico: no reproduce diseños propios de ninguna comunidad.
+- Todos los perfiles, relatos y comunidades de la demostración son **ficticios o de ejemplo**; no hay saberes sagrados reales ni datos médicos de personas.
+- El conocimiento de plantas está pendiente de validación con mayores y sabedoras y **no reemplaza la consulta médica**.
+- Los archivos adjuntos de los aportes (audio, video, PDF) todavía se simulan en el navegador; el almacenamiento de archivos (`assets`) es el siguiente paso de la hoja de ruta.
+- Créditos del diseño y del modelo de gobernanza: equipo del Seminario Taller ALUNA IA (ver `docs/`).
