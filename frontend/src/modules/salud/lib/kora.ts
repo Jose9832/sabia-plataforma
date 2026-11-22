@@ -32,7 +32,7 @@ interface Respuesta { texto: string; acciones?: AccionKora[] }
 export const sinTildes = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[¿?¡!.,;:]/g, " ");
 
 export const contextoKora = (ventana: Ventana | null, sesion: Sesion | null): ContextoKora => {
-  if (ventana === "adentro" && sesion) return sesion.usuario.comunidad;   /* indigena | afro | campesina */
+  if (ventana === "adentro" && sesion?.usuario.comunidad) return sesion.usuario.comunidad;   /* indigena | afro | campesina */
   if (ventana === "afuera") return "afuera";
   return "inicio";
 };
@@ -144,7 +144,7 @@ const intenciones: Intencion[] = [
           acciones: [accion("¿Qué es un microrracismo?", "aprende", "microrracismo", null, "afuera")] } },
   { claves: ["reportar", "report", "denunciar", "discrimin", "racismo", "me trataron mal", "maltrato", "queja", "derecho"],
     responder: ctx => adentroCon(ctx)
-      ? { texto: `En Ayuda → ${ctx.contexto === "campesina" ? "Reportes y derechos" : "Mis derechos"} puedes contar lo que pasó con un toque y grabar un mensaje. Solo lo ve tu ${comunidades[ctx.sesion!.usuario.comunidad].autoridad}. Si no hay señal, se envía después.`,
+      ? { texto: `En Ayuda → ${ctx.contexto === "campesina" ? "Reportes y derechos" : "Mis derechos"} puedes contar lo que pasó con un toque y grabar un mensaje. Solo lo ve tu ${comunidades[ctx.sesion!.usuario.comunidad!].autoridad}. Si no hay señal, se envía después.`,
           acciones: [accion("Hacer un reporte", "ayuda", "derechos")] }
       : { texto: "Los reportes se hacen desde «Mi comunidad» → Ayuda, para que los reciba la autoridad de tu comunidad.", acciones: [accion("Entrar a Mi comunidad", "acceso", null, null, "cualquiera")] } },
   { claves: ["tramite", "cedula", "documento", "registro civil", "beca", "subsidio", "apoyo", "sisben", " eps ", "afiliacion"],

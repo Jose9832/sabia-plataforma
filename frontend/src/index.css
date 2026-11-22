@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-aluna-navy: #06233B;
+    --color-aluna-petrol: #005A8D;
+    --color-aluna-cyan: #0088A9;
+    --color-aluna-deep: #0A1924;
+    --color-aluna-green: #214E45;
+    --color-aluna-earth: #9A583B;
+    --color-aluna-sand: #E2E8F0;
+    --color-aluna-gold: #D99B26;
+    --color-aluna-ivory: #F8FAFC;
+  }
+
+  body {
+    background-color: #F8FAFC;
+    color: #06233B;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .dark body {
+    background-color: #07131B;
+    color: #F1F5F9;
+  }
+}
+
+@layer components {
+  /* Semantic institutional surfaces & typography (WCAG 2.2 AA verified) */
+  .aluna-surface-page {
+    @apply bg-[#F8FAFC] dark:bg-[#07131B] text-[#06233B] dark:text-slate-100;
+  }
+
+  .aluna-surface-card {
+    @apply bg-white dark:bg-[#0D212E] border border-slate-200/90 dark:border-[#1E3E54] text-[#06233B] dark:text-slate-100 shadow-sm;
+  }
+
+  .aluna-surface-elevated {
+    @apply bg-slate-50 dark:bg-[#132C3E] border border-slate-200 dark:border-[#1E3E54] text-[#06233B] dark:text-slate-100;
+  }
+
+  .aluna-heading-primary {
+    @apply text-[#06233B] dark:text-white font-bold tracking-tight;
+  }
+
+  .aluna-text-body {
+    @apply text-slate-700 dark:text-slate-200;
+  }
+
+  .aluna-text-secondary {
+    @apply text-slate-600 dark:text-slate-300;
+  }
+
+  .aluna-text-muted {
+    @apply text-slate-500 dark:text-slate-400;
+  }
+
+  .aluna-input {
+    @apply bg-white dark:bg-[#0A1924] border border-slate-300 dark:border-[#1E3E54] text-[#06233B] dark:text-white placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:border-[#005A8D] dark:focus:border-aluna-cyan focus:ring-2 focus:ring-[#005A8D]/20 dark:focus:ring-aluna-cyan/20 rounded-xl transition-colors;
+  }
+
+  .aluna-btn-primary {
+    @apply bg-[#004B87] hover:bg-[#003865] dark:bg-aluna-cyan dark:hover:bg-aluna-cyan-light text-white dark:text-[#061A17] font-semibold rounded-full transition-colors shadow-sm;
+  }
+
+  .aluna-btn-secondary {
+    @apply bg-white hover:bg-slate-50 dark:bg-[#132C3E] dark:hover:bg-[#193A50] text-[#06233B] dark:text-slate-100 border border-slate-300 dark:border-[#1E3E54] font-semibold rounded-full transition-colors;
+  }
+}
+
+/* Subtle institutional grid & dot patterns */
+.bg-tramas-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 75, 135, 0.06) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.bg-tramas-night {
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 180, 216, 0.1) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.bg-aluna-hero-grid {
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Responsive safety */
+* {
+  box-sizing: border-box;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 75, 135, 0.35);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 75, 135, 0.65);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgba(10, 25, 36, 0.9);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(0, 136, 169, 0.45);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 184, 46, 0.7);
+}

@@ -1,9 +1,11 @@
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, useRef, useState, type JSX } from "react";
 import { Encabezado, MenuInferior } from "./components/Encabezado";
 import { Kora } from "./components/Kora";
 import { PantallaMedico, Toast } from "./components/Superpuestos";
 import type { Pantalla } from "./data/contenido";
+import type { Sesion } from "./data/tipos";
 import { useApp } from "./state/store";
+import "./styles/index.css";
 import { Acceso } from "./views/Acceso";
 import { Aprende } from "./views/Aprende";
 import { Ayuda } from "./views/ayuda/Ayuda";
@@ -28,7 +30,17 @@ const vistas: Record<Pantalla, () => JSX.Element> = {
   aprende: Aprende
 };
 
-export default function App() {
+/**
+ * Módulo de Salud SABIA dentro de ALUNA (pantalla «Bienestar»).
+ * Recibe la sesión de la plataforma; sus datos viven aparte (/api/v1/salud) y nunca
+ * pasan por Ceiba ni por el repositorio cultural. Sus estilos están aislados bajo
+ * `.sabia-modulo` (ver postcss.config.js), así que no chocan con Tailwind.
+ */
+export function SaludModulo({ sesion }: { sesion: Sesion | null }) {
+  const raiz = useRef<HTMLDivElement>(null);
+  useEffect(() => { useApp.getState().iniciar(); }, []);
+  useEffect(() => { useApp.getState().conectarSesion(sesion); }, [sesion]);
+
   const nav = useApp(s => s.nav);
   const comunidad = useApp(s => s.sesion?.usuario.comunidad);
   const hayFrase = useApp(s => !!(s.ui.parteSel || s.ui.sintomaSel));
@@ -44,7 +56,9 @@ export default function App() {
   const [animada, setAnimada] = useState(-1);
   const animar = animada !== nav.n;
   useEffect(() => {
-    (document.scrollingElement || document.documentElement).scrollTop = 0;
+    /* Al cambiar de pantalla del módulo, se vuelve al comienzo del módulo (no de la página) */
+    const caja = raiz.current?.getBoundingClientRect();
+    if (nav.n > 0 && caja && caja.top < 0) window.scrollBy({ top: caja.top - 80 });
     const t = setTimeout(() => setAnimada(nav.n), 600);
     return () => clearTimeout(t);
   }, [nav.n]);
@@ -52,6 +66,7 @@ export default function App() {
   const Vista = vistas[nav.pantalla] ?? Inicio;
 
   return (
+    <div className="sabia-modulo" ref={raiz}>
     <div className={`telefono ${conVentana ? nav.ventana ?? "afuera" : "sin-ventana"}${conFrase ? " con-frase" : ""}`} id="telefono">
       <Encabezado />
       {/* key: cada navegación vuelve a montar el contenido y repite la micro-animación de entrada */}
@@ -66,6 +81,7 @@ export default function App() {
       <PantallaMedico />
       <Kora />
       <Toast />
+    </div>
     </div>
   );
 }

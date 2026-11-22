@@ -87,6 +87,8 @@ interface Estado {
   alternarRed: () => void;
   setNavegadorEnLinea: (v: boolean) => void;
   iniciarSesion: (sesion: Sesion, nueva: boolean) => void;
+  /** La sesión la gestiona ALUNA: el módulo solo la recibe (o null al cerrar sesión). */
+  conectarSesion: (sesion: Sesion | null) => void;
   cerrarSesion: () => void;
   cargarDatos: () => Promise<void>;
   encolar: (tipo: TipoOperacion, datos: Record<string, unknown>, id?: string) => Operacion | null;
@@ -109,6 +111,7 @@ const datosIniciales = (): Datos => ({
 export const enLinea = (s: Pick<Estado, "modoSinConexion" | "navegadorEnLinea">) => !s.modoSinConexion && s.navegadorEnLinea;
 
 let timerToast: ReturnType<typeof setTimeout> | undefined;
+let iniciadoModulo = false;
 let sincronizandoAhora = false;
 
 export const useApp = create<Estado>()((set, get) => ({
@@ -128,8 +131,8 @@ export const useApp = create<Estado>()((set, get) => ({
   kora: { abierto: false, mensajes: [], saludado: false },
 
   ir: (pantalla, sub = null, detalle = null) => {
-    set(s => ({ nav: { ...s.nav, pantalla, sub, detalle, n: s.nav.n + 1 } }));
-    if (pantalla === "puertas") get().cerrarSesion();
+    /* En ALUNA, volver a las puertas solo cambia de puerta: la sesión es de la plataforma */
+    set(s => ({ nav: { ...s.nav, pantalla, sub, detalle, n: s.nav.n + 1, ventana: pantalla === "puertas" ? null : s.nav.ventana } }));
   },
 
   entrar: ventana => {
@@ -216,7 +219,7 @@ export const useApp = create<Estado>()((set, get) => ({
           obtener<Planta[]>(`/plantas?comunidad=${u.comunidad}`, opc),
           obtener<MisRegistros>("/mis-registros", opc)
         ]);
-        nuevos.investigaciones = investigaciones?.datos ?? respaldo.investigaciones.filter(i => i.comunidades.includes(u.comunidad));
+        nuevos.investigaciones = investigaciones?.datos ?? respaldo.investigaciones.filter(i => i.comunidades.includes(u.comunidad!));
         nuevos.plantas = plantas?.datos ?? respaldo.plantas.filter(p => p.comunidad === u.comunidad);
         nuevos.registros = registros?.datos ?? get().datos.registros;
         if (u.comunidad === "campesina") {
@@ -289,16 +292,31 @@ export const useApp = create<Estado>()((set, get) => ({
 
   setKora: cambios => set(s => ({ kora: { ...s.kora, ...cambios } })),
 
-  /* Arranque: recupera la sesión y la cola guardadas, y escucha los cambios de red. */
-  iniciar: () => {
-    const sesion = leerLocal<Sesion | null>("sabia-sesion", null);
-    if (sesion) {
-      set(s => ({
-        sesion,
-        nav: { ...s.nav, ventana: "adentro", pantalla: "inicio" },
-        datos: { ...s.datos, cuentas: leerLocal(claveCuentas(sesion), cuentasVacias()) }
-      }));
+  conectarSesion: sesion => {
+    const actual = get().sesion;
+    if (actual?.token === sesion?.token && actual?.usuario.comunidad === sesion?.usuario.comunidad) return;
+    if (!sesion) {
+      set(s => ({ sesion: null, nav: { ...s.nav, ventana: null, pantalla: "puertas", n: s.nav.n + 1 },
+                  kora: { ...s.kora, saludado: false, mensajes: [] }, datos: datosIniciales() }));
+      void get().cargarDatos();
+      return;
     }
+    const cambioDePersona = actual?.usuario.id !== sesion.usuario.id;
+    set(s => ({
+      sesion,
+      nav: cambioDePersona
+        ? { ventana: sesion.usuario.comunidad ? "adentro" : null, pantalla: sesion.usuario.comunidad ? "inicio" : "puertas", sub: null, detalle: null, n: s.nav.n + 1 }
+        : s.nav,
+      kora: cambioDePersona ? { ...s.kora, saludado: false, mensajes: [] } : s.kora,
+      datos: { ...s.datos, cuentas: leerLocal(claveCuentas(sesion), cuentasVacias()) }
+    }));
+    void get().cargarDatos().then(() => get().sincronizar(true));
+  },
+
+  /* Arranque: recupera la cola guardada y escucha los cambios de red (una sola vez). */
+  iniciar: () => {
+    if (iniciadoModulo) return;
+    iniciadoModulo = true;
     void leerCola().then(cola => {
       set({ cola });
       void get().cargarDatos().then(() => get().sincronizar(true));
@@ -316,5 +334,5 @@ export const useSesion = () => useApp(s => s.sesion);
 export const useComunidad = () => useApp(s => s.sesion?.usuario.comunidad ?? null);
 
 /** Operaciones de la cola de la persona actual, de un tipo dado. */
-export const operacionesPendientes = (cola: Operacion[], tipo: TipoOperacion, usuarioId?: number) =>
+export const operacionesPendientes = (cola: Operacion[], tipo: TipoOperacion, usuarioId?: number | string) =>
   cola.filter(o => o.tipo === tipo && o.usuario_id === usuarioId);

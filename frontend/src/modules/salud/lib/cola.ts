@@ -15,7 +15,7 @@ export interface Operacion {
   tipo: TipoOperacion;
   datos: Record<string, unknown>;
   creado_en: string;
-  usuario_id: number;
+  usuario_id: number | string;
 }
 
 interface ResultadoSync { id: string; ok: boolean; duplicado: boolean; error: string | null }
@@ -37,7 +37,7 @@ export async function agregarACola(op: Operacion): Promise<void> {
 }
 
 /** Envía las operaciones de la persona. Devuelve cuántas se enviaron y los errores que devolvió el servidor. */
-export async function enviarCola(token: string, usuarioId: number): Promise<{ enviadas: number; errores: string[] }> {
+export async function enviarCola(token: string, usuarioId: number | string): Promise<{ enviadas: number; errores: string[] }> {
   const ops = (await leerCola()).filter(o => o.usuario_id === usuarioId);
   if (!ops.length) return { enviadas: 0, errores: [] };
   const resp = await enviar<RespuestaSync>(

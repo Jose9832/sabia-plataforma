@@ -1,7 +1,7 @@
 /* Respaldo offline del primer uso.
    Si la app se abre sin señal y todavía no ha descargado nada del servidor,
    muestra los mismos datos de ejemplo con los que se siembra la base de datos
-   (datos/semilla.json, compartido con backend/app/seed.py). */
+   (database/seeds/salud_sabia.json, compartido con backend/app/seed.py). */
 import {
   alertas as alertasSemilla,
   encuentros as encuentrosSemilla,
@@ -11,7 +11,7 @@ import {
   plantas as plantasSemilla,
   relatos as relatosSemilla,
   semillas as semillasSemilla
-} from "../../../datos/semilla.json";
+} from "../../../../../database/seeds/salud_sabia.json";
 import type {
   Alerta,
   Encuentro,

@@ -6,9 +6,17 @@ import { useApp } from "../state/store";
 
 /* ---------- PUERTAS ---------- */
 export function Puertas() {
-  const ir = useApp(s => s.ir);
   const entrar = useApp(s => s.entrar);
   const aviso = useApp(s => s.aviso);
+  const comunidad = useApp(s => s.sesion?.usuario.comunidad);
+  const conSesion = useApp(s => !!s.sesion);
+
+  /* «Mi comunidad» usa la sesión de ALUNA: entra quien tenga una membresía verificada */
+  const entrarAMiComunidad = () => {
+    if (comunidad) entrar("adentro");
+    else if (conSesion) aviso("Tu perfil aún no tiene una comunidad verificada. Pide tu vinculación en «Comunidades».");
+    else aviso("Inicia sesión en ALUNA para entrar a Mi comunidad.");
+  };
   const nombreVoz = useSyncExternalStore(suscribirVoz, nombreCortoVoz);
 
   return (
@@ -19,10 +27,10 @@ export function Puertas() {
       <div className="chip-piloto">Piloto · Universidad del Magdalena</div>
       <div className="pregunta">¿Por dónde quieres entrar?</div>
       <div className="puertas-opciones">
-        <div role="button" className="puerta adentro" onClick={() => ir("acceso")}>
+        <div role="button" className="puerta adentro" onClick={entrarAMiComunidad}>
           <span className="grande"><Icono nombre="casa" /></span>
           <span><strong>Mi comunidad</strong><small>Indígenas, afrodescendientes y campesinos: salud, memoria y ayuda</small></span>
-          <BotonEscuchar texto="Mi comunidad. Para comunidades indígenas, afrodescendientes y campesinas. Entra con tu número de identificación y tu contraseña." />
+          <BotonEscuchar texto="Mi comunidad. Para comunidades indígenas, afrodescendientes y campesinas. Entra con tu cuenta de ALUNA." />
         </div>
         <div role="button" className="puerta afuera" onClick={() => entrar("afuera")}>
           <span className="grande"><Icono nombre="mundo" /></span>

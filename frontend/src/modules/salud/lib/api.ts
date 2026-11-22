@@ -4,7 +4,8 @@
    - POST: solo con señal (las acciones offline van por la cola, ver cola.ts). */
 import { idb } from "./db";
 
-export const API_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+/* El módulo de Salud usa la misma API que ALUNA, en su propio espacio aislado: /api/v1/salud */
+export const API_URL = ((import.meta.env.VITE_API_BASE_URL as string | undefined) || "/api/v1").replace(/\/$/, "") + "/salud";
 const TIEMPO_MAXIMO = 10000;
 
 export class ErrorApi extends Error {
@@ -25,7 +26,7 @@ async function pedir<T>(metodo: string, ruta: string, cuerpo: unknown, { token, 
   const temporizador = setTimeout(() => control.abort(), TIEMPO_MAXIMO);
   let resp: Response;
   try {
-    resp = await fetch(`${API_URL}/api${ruta}`, {
+    resp = await fetch(`${API_URL}${ruta}`, {
       method: metodo,
       headers: {
         ...(cuerpo !== undefined ? { "Content-Type": "application/json" } : {}),

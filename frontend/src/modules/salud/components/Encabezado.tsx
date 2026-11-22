@@ -49,10 +49,10 @@ export function Encabezado() {
       </div>
       {conVentana && (
         <button className="boton-puerta" id="botonPuerta" onClick={() => ir("puertas")}>
-          {nav.ventana === "adentro" && sesion ? (
+          {nav.ventana === "adentro" && sesion?.usuario.comunidad ? (
             <>
               <IconoComunidad comunidad={sesion.usuario.comunidad} tam={22} />{" "}
-              <b>Comunidad {comunidades[sesion.usuario.comunidad].nombre}</b><span className="cambiar">Salir ⇥</span>
+              <b>Comunidad {comunidades[sesion.usuario.comunidad].nombre}</b><span className="cambiar">Cambiar puerta ⇄</span>
             </>
           ) : (
             <><Icono nombre="mundo" /> <b>Conocer</b><span className="cambiar">Cambiar puerta ⇄</span></>

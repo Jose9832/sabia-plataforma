@@ -1,0 +1,1020 @@
+import type { 
+  User, 
+  Community, 
+  KnowledgeItem, 
+  AccessRequest, 
+  AffiliationRequest, 
+  AILabArtifact, 
+  WellnessItem 
+} from '../types/index.ts';
+
+export const DEMO_USERS: User[] = [
+  {
+    id: 'user_visitor',
+    name: 'Sofía Ramos',
+    identity: 'visitor',
+    roleLabel: 'Visitante General',
+    avatar: '/assets/avatars/avatar_sofia_ramos.jpg',
+    email: 'sofia.ramos@correo.com',
+    affiliations: [],
+    bio: 'Ciudadana interesada en consultar saberes territoriales autorizados para divulgación pública abierta.',
+    isDemo: true
+  },
+  {
+    id: 'user_researcher',
+    name: 'Carlos Mendoza',
+    identity: 'researcher',
+    roleLabel: 'Estudiante Investigador',
+    avatar: '/assets/avatars/avatar_carlos_mendoza.jpg',
+    email: 'cmendoza@unimagdalena.edu.co',
+    organization: 'UNIMAGDALENA · Semillero ALUNA IA',
+    affiliations: [
+      {
+        communityId: 'comm_sierra',
+        communityName: 'Pueblos Indígenas de la Sierra Nevada',
+        status: 'pending',
+        role: 'member'
+      }
+    ],
+    bio: 'Estudiante de Ingeniería Ambiental en UNIMAGDALENA. Investiga monitoreo hídrico e interculturalidad.',
+    isDemo: true
+  },
+  {
+    id: 'user_member_sierra',
+    name: 'Aura Villafaña',
+    identity: 'community_member',
+    roleLabel: 'Integrante Comunitaria (Sierra Nevada)',
+    avatar: '/assets/avatars/avatar_aura_villafana.jpg',
+    email: 'aura.villafana@sierra-nevada.org',
+    affiliations: [
+      {
+        communityId: 'comm_sierra',
+        communityName: 'Pueblos Indígenas de la Sierra Nevada',
+        status: 'verified',
+        role: 'member',
+        joinedDate: '15 Mar 2025'
+      }
+    ],
+    bio: 'Tejedora y líder comunitaria de la Sierra Nevada de Santa Marta. Registra prácticas agroecológicas de cuencas altas.',
+    isDemo: true
+  },
+  {
+    id: 'user_custodian_sierra',
+    name: 'Mamo Senen',
+    identity: 'community_member',
+    roleLabel: 'Custodio Territorial (Sierra Nevada)',
+    avatar: '/assets/avatars/avatar_mamo_senen.jpg',
+    email: 'custodia.sierra@alunaia.co',
+    affiliations: [
+      {
+        communityId: 'comm_sierra',
+        communityName: 'Pueblos Indígenas de la Sierra Nevada',
+        status: 'verified',
+        role: 'custodian',
+        joinedDate: '01 Ene 2024'
+      }
+    ],
+    bio: 'Autoridad comunitaria y custodio de la cuenca media y alta. No tiene autoridad sobre otras comunidades.',
+    isDemo: true
+  },
+  {
+    id: 'user_custodian_afro',
+    name: 'Faustina Palacios',
+    identity: 'community_member',
+    roleLabel: 'Custodia Comunitaria (Litoral Afrocaribe)',
+    avatar: '/assets/avatars/avatar_faustina_palacios.jpg',
+    email: 'custodia.afro@alunaia.co',
+    affiliations: [
+      {
+        communityId: 'comm_afro',
+        communityName: 'Comunidades Afrodescendientes del Litoral Caribe',
+        status: 'verified',
+        role: 'custodian',
+        joinedDate: '10 Feb 2024'
+      }
+    ],
+    bio: 'Lideresa del Consejo Comunitario Ribereño y custodia de la memoria sonora, cantos de boga y medicina de patio.',
+    isDemo: true
+  },
+  {
+    id: 'user_member_pesca',
+    name: 'Patrón Marino Vásquez',
+    identity: 'community_member',
+    roleLabel: 'Custodio Pescador (Taganga)',
+    avatar: '/assets/avatars/avatar_patron_marino.jpg',
+    email: 'pesca.taganga@alunaia.co',
+    affiliations: [
+      {
+        communityId: 'comm_pescadores',
+        communityName: 'Comunidades de Pescadores Artesanales de Taganga',
+        status: 'verified',
+        role: 'custodian',
+        joinedDate: '05 May 2024'
+      }
+    ],
+    bio: 'Pescador mayor de Taganga. Custodio de las cartas de viento, chinchorros tradicionales y vedas éticas.',
+    isDemo: true
+  }
+];
+
+export const DEMO_COMMUNITIES: Community[] = [
+  {
+    id: 'comm_sierra',
+    name: 'Pueblos Indígenas de la Sierra Nevada',
+    region: 'Sierra Nevada de Santa Marta · Cuencas Altas',
+    description: 'Espacio demostrativo para la preservación de relatos sobre el cuidado de las cuencas altas, ciclos climáticos y el orden natural del territorio sagrado.',
+    culturalContext: 'Inspirado en el principio de equilibrio del corazón del mundo. Gobernanza autónoma por autoridades delegadas.',
+    photoUrl: '/assets/photos/territorio_sede_murunmuke_sierra_nevada.jpg',
+    tags: ['Cuencas Altas', 'Equilibrio Territorial', 'Agroecología', 'Ley de Origen'],
+    custodians: [
+      { id: 'user_custodian_sierra', name: 'Mamo Senen', title: 'Custodio Territorial Delegado' }
+    ],
+    membersCount: 42,
+    participationGuidelines: 'El acceso a saberes territoriales exige compromiso de respeto, no mercantilización y consulta previa a los custodios de cada cuenca.',
+    policies: {
+      acceptsExternalContributions: true,
+      requiresReviewForPublic: true,
+      aiDefaultPermission: 'derived_approval_required',
+      allowsExternalDerivatives: false
+    }
+  },
+  {
+    id: 'comm_afro',
+    name: 'Comunidades Afrodescendientes del Litoral Caribe',
+    region: 'Litoral Caribe y Ciénagas del Magdalena',
+    description: 'Memoria viva de los cantos de boga, medicina tradicional con plantas de patio, soberanía alimentaria y resistencia cimarrona ribereña.',
+    culturalContext: 'Espacio de diálogo para comunidades negras, palenqueras y raizales del Caribe colombiano.',
+    photoUrl: '/assets/photos/territorio_rio_magdalena_embarcacion.jpg',
+    tags: ['Cantos de Boga', 'Plantas Medicinales', 'Memoria Cimarrona', 'Soberanía Alimentaria'],
+    custodians: [
+      { id: 'user_custodian_afro', name: 'Faustina Palacios', title: 'Custodia del Consejo Ribereño' }
+    ],
+    membersCount: 38,
+    participationGuidelines: 'Reconocimiento de la autoría colectiva y protección contra la apropiación indebida de saberes etnobotánicos.',
+    policies: {
+      acceptsExternalContributions: true,
+      requiresReviewForPublic: false,
+      aiDefaultPermission: 'educational_query',
+      allowsExternalDerivatives: true
+    }
+  },
+  {
+    id: 'comm_pescadores',
+    name: 'Comunidades de Pescadores Artesanales de Taganga',
+    region: 'Taganga, Bahía Concha y Litoral Samario',
+    description: 'Saberes oceanográficos sobre corrientes marinas, lectura de constelaciones nocturnas para la faena, mallas de chinchorro tradicional y vedas ecológicas voluntarias.',
+    culturalContext: 'Familias de pescadores con generaciones navegando el mar de Santa Marta y la ensenada de Taganga.',
+    photoUrl: '/assets/photos/territorio_bahia_pesca_artesanal_montanas.jpg',
+    tags: ['Lectura de Mareas', 'Chinchorro Tradicional', 'Ictiología Comunitaria', 'Vedas del Mar'],
+    custodians: [
+      { id: 'user_member_pesca', name: 'Patrón Marino Vásquez', title: 'Pescador Mayor y Custodio' }
+    ],
+    membersCount: 56,
+    participationGuidelines: 'Los puntos de pesca tradicionales y las rutas de cardúmenes son datos de custodia reservada.',
+    policies: {
+      acceptsExternalContributions: false,
+      requiresReviewForPublic: true,
+      aiDefaultPermission: 'educational_query',
+      allowsExternalDerivatives: false
+    }
+  },
+  {
+    id: 'comm_campesinos',
+    name: 'Comunidades Campesinas y Agroecológicas',
+    region: 'Estribaciones de la Sierra y Valle del Magdalena',
+    description: 'Bancos comunitarios de semillas criollas, bioindicadores climáticos basados en floración del bosque seco tropical y técnicas de policultivo sostenible.',
+    culturalContext: 'Familias campesinas guardianas de semillas nativas y policultivos libres de agrotóxicos.',
+    photoUrl: '/assets/photos/ciencia_campo_experimental_agronomia.jpg',
+    tags: ['Semillas Criollas', 'Bioindicadores', 'Bosque Seco Tropical', 'Policultivo'],
+    custodians: [
+      { id: 'user_custodian_campo', name: 'Don Abelardo Solano', title: 'Coordinador de Semillas Criollas' }
+    ],
+    membersCount: 29,
+    participationGuidelines: 'Prohibición explícita de patentamiento o uso de semillas nativas con fines bioprospectivos comerciales.',
+    policies: {
+      acceptsExternalContributions: true,
+      requiresReviewForPublic: true,
+      aiDefaultPermission: 'derived_approval_required',
+      allowsExternalDerivatives: true
+    }
+  },
+  {
+    id: 'comm_palafitos',
+    name: 'Comunidades Palafíticas de la Ciénaga Grande',
+    region: 'Ciénaga Grande de Santa Marta · Nueva Venecia y Buenavista',
+    description: 'Cultura anfibia, arquitectura de pilotes en madera nativa, navegación en canoa y convivencia armónica con los manglares y el complejo lagunar.',
+    culturalContext: 'Poblaciones que habitan sobre el agua en el sistema de humedales más grande de Colombia.',
+    photoUrl: '/assets/photos/territorio_hub_innovacion_marino_costera.jpg',
+    tags: ['Arquitectura Palafítica', 'Cultura Anfibia', 'Manglares', 'Ciénaga Grande'],
+    custodians: [
+      { id: 'user_custodian_palafito', name: 'Maestra Denis Polo', title: 'Custodia del Cabildo Anfibio' }
+    ],
+    membersCount: 31,
+    participationGuidelines: 'Protección de las memorias del territorio anfibio y proyectos de restauración ecológica.',
+    policies: {
+      acceptsExternalContributions: true,
+      requiresReviewForPublic: true,
+      aiDefaultPermission: 'educational_query',
+      allowsExternalDerivatives: false
+    }
+  }
+];
+
+export const INITIAL_KNOWLEDGE_ITEMS: KnowledgeItem[] = [
+  // 1. TERRAZAS DE SIEMBRA (Sierra Nevada)
+  {
+    id: 'know_01_terrazas',
+    title: 'Prácticas de siembra en terrazas y respeto a los ciclos de lluvia',
+    type: 'practica',
+    communityIds: ['comm_sierra'],
+    communityNames: ['Pueblos Indígenas de la Sierra Nevada'],
+    author: 'Aura Villafaña',
+    authorRole: 'Integrante Comunitaria',
+    authorUserId: 'user_member_sierra',
+    isCommunityCollectiveKnowledge: true,
+    date: '10 Nov 2026',
+    permissions: {
+      consultation: 'community',
+      downloadAllowed: false,
+      aiQueryAllowed: 'derived_approval_required',
+      derivativeGenerationAllowed: true,
+      derivativePublicationApprovalRequired: true,
+      reusableForEducation: true
+    },
+    description: 'Registro descriptivo sobre el escalonamiento de terrazas de piedra para evitar la erosión de laderas en las cuencas altas durante la temporada de lluvias torrenciales.',
+    excerptForPublic: 'Resumen orientativo: Prácticas de ingeniería tradicional en piedra para retención de suelo y agua en laderas de alta montaña.',
+    fullContent: `Las terrazas de cultivo en la ladera cumplen dos funciones sagradas y prácticas: primero, calmar la fuerza del agua cuando baja de la serranía para que no se lleve la capa de tierra negra fértil; segundo, permitir que la humedad se filtre lentamente hacia las raíces del maíz criollo, la yuca y el fríjol guandul.
+
+La construcción inicia en menguante, acomodando piedras de río sin cemento ni amalgamas artificiales. Cada hilera de piedra lleva una inclinación leve de dos a tres grados hacia la montaña, permitiendo que la tierra misma soporte el talud. Entre terraza y terraza se siembran cercas vivas de arbustos nativos que sirven de refugio a las abejas silvestres y avisan, mediante su floración, cuándo se acerca la época de transición climática.
+
+El conocimiento de estas terrazas enseña que el agua no se combate ni se canaliza bruscamente: se le invita a descansar en cada nivel para que nutra la vida comunitaria sin causar desprendimientos.`,
+    tags: ['Terrazas', 'Suelo', 'Cuencas', 'Agroecología', 'Agua'],
+    status: 'approved',
+    approvals: [
+      {
+        communityId: 'comm_sierra',
+        communityName: 'Pueblos Indígenas de la Sierra Nevada',
+        custodianId: 'user_custodian_sierra',
+        custodianName: 'Mamo Senen',
+        status: 'approved',
+        decisionDate: '11 Nov 2026',
+        note: 'Aprobado para consulta interna de la comunidad y uso educativo intercultural previa autorización.'
+      }
+    ],
+    authorizedUserIds: ['user_member_sierra', 'user_custodian_sierra'],
+    mediaUrl: '/assets/photos/naturaleza_sendero_bosque_seco.jpg',
+    educationalData: {
+      summary: 'Técnica vernácula de retención de suelo mediante terrazas de piedra acomodadas en luna menguante con inclinación de 2° a 3° hacia el monte, integrando cercas vivas polinizadoras.',
+      simpleExplanation: 'En vez de usar cemento o maquinaria pesada, se construyen escalones con piedras de río en menguante. El agua baja con calma, riega el maíz y la yuca, y las flores de las cercas vivas le avisan a la comunidad cuándo sembrar.',
+      sampleQuestions: [
+        {
+          q: '¿Por qué se construyen las terrazas en fase lunar menguante?',
+          ans: 'Según el relato de Aura Villafaña, en menguante la humedad del suelo se encuentra en reposo, lo que permite que el acomodo de piedras sin cemento se asiente de manera firme con un ángulo de 2° a 3° hacia la montaña.',
+          quote: '"La construcción inicia en menguante, acomodando piedras de río sin cemento ni amalgamas artificiales. Cada hilera de piedra lleva una inclinación leve de dos a tres grados hacia la montaña..."',
+          anchor: 'Párrafo 2 — Terrazas de siembra'
+        },
+        {
+          q: '¿Qué función ecológica cumplen las cercas vivas entre las terrazas?',
+          ans: 'Albergan abejas silvestres nativas y actúan como bioindicadores climáticos: su floración avisa la llegada de la temporada de transición de lluvias sin requerir sensores electrónicos.',
+          quote: '"Entre terraza y terraza se siembran cercas vivas de arbustos nativos que sirven de refugio a las abejas silvestres y avisan, mediante su floración, cuándo se acerca la época de transición climática."',
+          anchor: 'Párrafo 2 — Cercas vivas y floración'
+        },
+        {
+          q: '¿Cuál es el principio ético fundamental sobre el agua?',
+          ans: 'El agua no debe combatirse ni canalizarse con violencia; se le debe invitar a descansar en cada nivel para nutrir la vida del territorio.',
+          quote: '"El agua no se combate ni se canaliza bruscamente: se le invita a descansar en cada nivel para que nutra la vida comunitaria sin causar desprendimientos."',
+          anchor: 'Párrafo 3 — Principio ético territorial'
+        }
+      ],
+      outOfDomainQuestion: {
+        q: '¿Qué fertilizantes químicos sintéticos NPK se aplican en las terrazas?',
+        ans: 'Información no disponible en la fuente: Este saber tradicional no contempla fertilizantes químicos sintéticos. Su fertilidad depende exclusivamente de la tierra negra retenida, biomasa vegetal y humedad natural.',
+        explanation: 'El sistema rechaza inventar datos agronómicos ajenos al relato comunitario.'
+      },
+      slides: [
+        {
+          number: 1,
+          title: 'Terrazas de Piedra: Diálogo con la Pendiente',
+          content: 'En las laderas empinadas de la Sierra Nevada no se usa maquinaria pesada. Se colocan piedras de río acomodadas en seco para que el suelo respire y el agua descanse.',
+          quote: '"Al agua no se le combate, se le invita a descansar en cada nivel."',
+          teachingNote: 'Fomentar la reflexión sobre la retención hídrica frente a la contención agresiva.',
+          sourceAnchor: 'Aura Villafaña — Prácticas de siembra en terrazas'
+        },
+        {
+          number: 2,
+          title: 'Geometría del Talud y Calendario Lunar',
+          content: 'Las piedras se ubican en fase lunar menguante. El muro tiene una contra-inclinación de 2° a 3° hacia el monte, asegurando estabilidad física sin cemento.',
+          teachingNote: 'Analizar conceptos de física estática aplicados al conocimiento campesino e indígena.',
+          sourceAnchor: 'Párrafo 2 — Geometría y luna'
+        },
+        {
+          number: 3,
+          title: 'Cercas Vivas como Bioindicadores',
+          content: 'Los arbustos nativos resguardan abejas silvestres. Su floración avisa el cambio de régimen de lluvias con precisión biológica.',
+          teachingNote: 'Explicar cómo la biodiversidad actúa como estación meteorológica viva.',
+          sourceAnchor: 'Párrafo 2 — Cercas vivas'
+        },
+        {
+          number: 4,
+          title: 'Cuidado de Cuencas y Seguridad Hídrica',
+          content: 'Retener el suelo en la montaña protege los acueductos y cuencas que abastecen a las poblaciones costeras río abajo.',
+          quote: '"Cuidar la ladera alta es proteger el agua de quienes habitan el mar."',
+          teachingNote: 'Conectar la cuenca alta con el mar Caribe.',
+          sourceAnchor: 'Conclusión comunitaria — Sierra Nevada'
+        }
+      ],
+      learningGuide: {
+        keyConcepts: [
+          { term: 'Terrazas de piedra seca', definition: 'Muros escalonados de contención construidos sin cemento para filtración hídrica.' },
+          { term: 'Contra-inclinación de 2° a 3°', definition: 'Ángulo hacia la montaña para que el peso de la ladera sostenga el muro.' },
+          { term: 'Bioindicador de floración', definition: 'Uso de especies vegetales nativas para predecir transiciones estacionales.' }
+        ],
+        reflectionQuestions: [
+          '¿Por qué el cemento rigidiza el suelo e impide la filtración freática?',
+          '¿Cómo protege el escalonamiento de laderas la seguridad alimentaria en cuenca media?'
+        ],
+        classroomActivity: 'Diseño de un modelo a escala de retención de agua en pendiente utilizando piedras de río y suelo vegetal.'
+      },
+      podcastTranscript: [
+        {
+          speaker: 'Narradora ALUNA',
+          role: 'Voz Educativa',
+          time: '00:00 - 00:30',
+          text: 'Bienvenidos a este espacio formativo. Hoy exploramos cómo las comunidades de la Sierra Nevada domestican la pendiente sin destruir la tierra fértil.'
+        },
+        {
+          speaker: 'Aura Villafaña',
+          role: 'Sabedora Comunitaria',
+          time: '00:31 - 01:20',
+          text: 'Cuando el agua baja furiosa por la montaña, si no hay terrazas se lleva la vida. Por eso en menguante acomodamos la piedra para que repose y alimente la raíz.'
+        }
+      ],
+      conceptNodes: [
+        { id: 'terrazas', label: 'Terrazas de Piedra', category: 'practica', description: 'Muros escalonados sin cemento.', connections: ['agua', 'suelo'] },
+        { id: 'agua', label: 'Ciclo del Agua', category: 'territorio', description: 'Flujo hídrico respetuoso.', connections: ['terrazas', 'siembra'] },
+        { id: 'suelo', label: 'Tierra Fértil', category: 'principio', description: 'Capa orgánica retenida.', connections: ['siembra'] },
+        { id: 'siembra', label: 'Maíz y Guandul', category: 'origen', description: 'Soberanía alimentaria.', connections: ['cercas'] },
+        { id: 'cercas', label: 'Cercas Vivas', category: 'herramienta', description: 'Polinizadores y clima.', connections: ['terrazas'] }
+      ],
+      videoStoryboard: [
+        { scene: 1, visual: 'Amanecer brumoso sobre la ladera de la serranía.', narration: '"En la montaña, el agua es una visita sagrada."', note: 'Líneas topográficas animadas.' },
+        { scene: 2, visual: 'Manos acomodando piedras de río con ángulo inclinado.', narration: '"Cada piedra puesta en menguante es un acuerdo con la pendiente."', note: 'Detalle geométrico de 2°.' }
+      ]
+    }
+  },
+
+  // 2. CANTOS DE BOGA (Afrodescendiente)
+  {
+    id: 'know_02_boga',
+    title: 'Cantos de boga y memoria de la navegación fluvial en el Magdalena',
+    type: 'audio',
+    communityIds: ['comm_afro'],
+    communityNames: ['Comunidades Afrodescendientes del Litoral Caribe'],
+    author: 'Teresa Ramos & Faustina Palacios',
+    authorRole: 'Cantoras Tradicionales del Río',
+    authorUserId: 'user_custodian_afro',
+    isCommunityCollectiveKnowledge: true,
+    date: '02 Nov 2026',
+    permissions: {
+      consultation: 'public',
+      downloadAllowed: true,
+      aiQueryAllowed: 'educational_query',
+      derivativeGenerationAllowed: true,
+      derivativePublicationApprovalRequired: true,
+      reusableForEducation: true
+    },
+    description: 'Relato sonoro y testimonial sobre los compases rítmicos que coordinaban el remo acompasado de los bogas en el Río Magdalena, transmitidos por vía oral.',
+    excerptForPublic: 'Los cantos de boga no eran solo música: eran el metrónomo del río, la advertencia ante remolinos y la resistencia viva de los remeros.',
+    fullContent: `El canto de boga nace en el pecho del palanquero. Cuando el río Magdalena viene crecido con palizadas, el remero líder inicia el verso con voz aguda para que el eco rompa sobre la niebla del amanecer. La cuadrilla responde al unísono en el golpe seco del remo contra la corriente.
+
+Cada curva del río tiene su tono: aguas mansas piden melodías largas y reposadas que cuentan amores ribereños y recuerdos de libertad cimarrona; las bocas tormentosas exigen cantos acelerados de percusión vocal rápida que sincronizan el esfuerzo muscular para evitar que la canoa zozobre en los remolinos.
+
+Estos cantos constituyen el archivo sonoro más antiguo de la navegación colombiana y demuestran cómo la memoria afrocaribeña transformó el trabajo forzado en arte, sincronización y salvaguarda comunitaria.`,
+    tags: ['Cantos de Boga', 'Oralidad', 'Río Magdalena', 'Música Tradicional', 'Cimarronaje'],
+    status: 'approved',
+    approvals: [
+      {
+        communityId: 'comm_afro',
+        communityName: 'Comunidades Afrodescendientes del Litoral Caribe',
+        custodianId: 'user_custodian_afro',
+        custodianName: 'Faustina Palacios',
+        status: 'approved',
+        decisionDate: '03 Nov 2026',
+        note: 'Aprobado para consulta pública y diálogo sonoro intercultural.'
+      }
+    ],
+    authorizedUserIds: ['user_visitor', 'user_researcher', 'user_member_sierra', 'user_custodian_sierra', 'user_custodian_afro'],
+    mediaUrl: '/assets/photos/territorio_rio_magdalena_embarcacion.jpg',
+    audioUrl: '/assets/audios/audio_e01.wav',
+    audioDuration: '03:45',
+    educationalData: {
+      summary: 'Registro sonoro y etnomusicológico sobre los cantos de boga como herramienta rítmica de coordinación motriz, cartografía sonora del Río Magdalena y resistencia cimarrona.',
+      simpleExplanation: 'Los bogas no cantaban solo por cantar: el canto era el reloj del remo. Cuando el río era peligroso, cantaban más rápido para remar juntos con fuerza; cuando el río era manso, cantaban historias de libertad para no cansarse.',
+      sampleQuestions: [
+        {
+          q: '¿Cómo ayudaban los cantos de boga a evitar accidentes en el río?',
+          ans: 'El ritmo vocal sincronizaba el movimiento simultáneo de los remeros. En pasos difíciles o remolinos, el canto acelerado garantizaba que todos los remos golpearan el agua al mismo segundo exacto, impidiendo el vuelco de la embarcación.',
+          quote: '"...las bocas tormentosas exigen cantos acelerados de percusión vocal rápida que sincronizan el esfuerzo muscular para evitar que la canoa zozobre en los remolinos."',
+          anchor: 'Párrafo 2 — Ritmo y corriente'
+        },
+        {
+          q: '¿Qué significado tenían los cantos en aguas mansas?',
+          ans: 'En aguas mansas los versos eran largos y pausados, dedicados a la memoria de la libertad cimarrona y relatos comunitarios, aliviando la fatiga del viaje.',
+          quote: '"...aguas mansas piden melodías largas y reposadas que cuentan amores ribereños y recuerdos de libertad cimarrona..."',
+          anchor: 'Párrafo 2 — Melodías reposadas'
+        },
+        {
+          q: '¿Por qué se consideran un archivo sonoro de resistencia?',
+          ans: 'Porque a través de la oralidad y la polirritmia, los pueblos afrocaribeños convirtieron una tarea de explotación física en un lenguaje propio de salvaguarda cultural y dignidad.',
+          quote: '"...la memoria afrocaribeña transformó el trabajo forzado en arte, sincronización y salvaguarda comunitaria."',
+          anchor: 'Párrafo 3 — Resistencia histórica'
+        }
+      ],
+      outOfDomainQuestion: {
+        q: '¿Cuáles son las especificaciones técnicas de los motores fuera de borda Yamaha?',
+        ans: 'Información no disponible en la fuente: Este saber documenta exclusivamente la navegación tradicional a remo y palanca de los bogas en el río Magdalena, previa a la motorización.',
+        explanation: 'El sistema no introduce tecnologías mecánicas ausentes en el relato testimonial.'
+      },
+      slides: [
+        {
+          number: 1,
+          title: 'El Canto como Metrónomo Fluvial',
+          content: 'Navegar el gran río Magdalena requería precisión absoluta. El grito del remero líder marcaba el compás exacto para vencer las corrientes.',
+          quote: '"La cuadrilla responde al unísono en el golpe seco del remo contra la corriente."',
+          teachingNote: 'Destacar la relación entre ergonomía tradicional, ritmo sonoro y navegación colectiva.',
+          sourceAnchor: 'Teresa Ramos — Cantos de boga'
+        },
+        {
+          number: 2,
+          title: 'Cartografía Sonora de las Corrientes',
+          content: 'Cada accidente geográfico del río tenía su melodía: cantos veloces en remolinos y tonos melancólicos en ciénagas abiertas.',
+          teachingNote: 'Explicar cómo la música tradicional servía como mapa sonoro en tiempos pre-satelitales.',
+          sourceAnchor: 'Párrafo 2 — Curvas y tonos'
+        },
+        {
+          number: 3,
+          title: 'Memoria Cimarrona y Dignidad',
+          content: 'En las largas jornadas de boga, la palabra rimada transmitía genealogías, saberes de botánica ribereña y relatos de libertad.',
+          teachingNote: 'Abordar la justicia histórica y el reconocimiento de la cultura afrocolombiana.',
+          sourceAnchor: 'Párrafo 3 — Resistencia'
+        }
+      ],
+      learningGuide: {
+        keyConcepts: [
+          { term: 'Boga', definition: 'Remero tradicional que impulsaba canoas y champanes por el río Magdalena.' },
+          { term: 'Palanquero', definition: 'Líder de la embarcación que marcaba la profundidad con una vara larga o palanca.' },
+          { term: 'Polirritmia ribereña', definition: 'Estructura rítmica compartida entre percusión vocal y golpes de remo.' }
+        ],
+        reflectionQuestions: [
+          '¿Cómo influyó el río Magdalena en la construcción de la identidad nacional?',
+          '¿De qué manera los cantos orales protegieron lenguajes y memorias frente al olvido?'
+        ],
+        classroomActivity: 'Ejercicio de sincronización rítmica en grupo siguiendo patrones de llamada y respuesta de cantos de boga.'
+      },
+      podcastTranscript: [
+        {
+          speaker: 'Faustina Palacios',
+          role: 'Custodia Afrocaribe',
+          time: '00:00 - 00:45',
+          text: 'Cuando el boga canta, el río escucha. Ese canto no se aprendía en libros: salía del cuero y de la corriente, avisando si venía palizada o remolino.'
+        },
+        {
+          speaker: 'Investigador UNIMAGDALENA',
+          role: 'Mediador Educativo',
+          time: '00:46 - 01:30',
+          text: 'Es fascinante comprobar cómo la cadencia respiratoria del canto evitaba el colapso pulmonar durante jornadas de hasta doce horas de remada continua.'
+        }
+      ],
+      conceptNodes: [
+        { id: 'rio', label: 'Río Magdalena', category: 'territorio', description: 'Arteria de navegación fluvial.', connections: ['boga', 'corrientes'] },
+        { id: 'boga', label: 'Oficio de Boga', category: 'practica', description: 'Remeros tradicionales afro.', connections: ['canto', 'resistencia'] },
+        { id: 'canto', label: 'Canto de Boga', category: 'herramienta', description: 'Metrónomo y llamado-respuesta.', connections: ['corrientes'] },
+        { id: 'corrientes', label: 'Lectura de Corrientes', category: 'principio', description: 'Prevención de remolinos.', connections: ['rio'] },
+        { id: 'resistencia', label: 'Memoria Cimarrona', category: 'origen', description: 'Libertad y dignidad ribereña.', connections: ['canto'] }
+      ],
+      videoStoryboard: [
+        { scene: 1, visual: 'Primer plano a la proa de una canoa cortando las aguas del río Magdalena al amanecer.', narration: '"El río canta con la voz de quienes lo cruzaron remando hacia la libertad."', note: 'Audio de percusión de remos sobre agua.' }
+      ]
+    }
+  },
+
+  // 3. VIENTOS Y MAREAS (Pescadores Taganga)
+  {
+    id: 'know_03_mareas',
+    title: 'Lectura de vientos y mareas para la pesca artesanal en Taganga',
+    type: 'relato',
+    communityIds: ['comm_pescadores'],
+    communityNames: ['Comunidades de Pescadores Artesanales de Taganga'],
+    author: 'Patrón Marino Vásquez',
+    authorRole: 'Pescador Mayor de Ensenada',
+    authorUserId: 'user_member_pesca',
+    isCommunityCollectiveKnowledge: true,
+    date: '28 Oct 2026',
+    permissions: {
+      consultation: 'public',
+      downloadAllowed: false,
+      aiQueryAllowed: 'educational_query',
+      derivativeGenerationAllowed: true,
+      derivativePublicationApprovalRequired: true,
+      reusableForEducation: true
+    },
+    description: 'Descripción de las señales del viento "Loco" y la "Brisa Loca", el vuelo rasante de los alcatraces y su relación con el cardumen de cojinúa.',
+    excerptForPublic: 'El pescador artesanal no necesita satélite para saber si la mar está brava: escucha el silbido del cerro de las Tres Cruces.',
+    fullContent: `En la bahía de Taganga, el mar se lee con el cuerpo. Antes del alba, el pescador mayor sube al mirador y observa el color de la espuma sobre las piedras de la punta. Si el agua se torna verdosa y las gaviotas vuelan en círculo cerrado sin lanzarse en picada, el cardumen de cojinúa está profundo y la corriente submarina viene fría del norte.
+
+El viento conocido como la Brisa Loca baja encajonado desde las quebradas de la Sierra. Cuando empieza a soplar en rachas cortas, las redes de chinchorro no deben tirarse porque la fuerza del oleaje las enreda contra el arrecife coralino.
+
+Este saber demuestra que la sostenibilidad pesquera depende de respetar las pausas que la naturaleza impone: no se sale a pescar cuando la marea exige reposo.`,
+    tags: ['Pesca Artesanal', 'Mareas', 'Vientos', 'Taganga', 'Sostenibilidad'],
+    status: 'approved',
+    approvals: [
+      {
+        communityId: 'comm_pescadores',
+        communityName: 'Comunidades de Pescadores Artesanales de Taganga',
+        custodianId: 'user_member_pesca',
+        custodianName: 'Patrón Marino Vásquez',
+        status: 'approved',
+        decisionDate: '29 Oct 2026',
+        note: 'Autorizado para difusión de buenas prácticas ecológicas de pesca respetuosa.'
+      }
+    ],
+    authorizedUserIds: ['user_visitor', 'user_researcher', 'user_member_sierra', 'user_custodian_sierra', 'user_member_pesca'],
+    mediaUrl: '/assets/photos/territorio_bahia_pesca_artesanal_montanas.jpg',
+    educationalData: {
+      summary: 'Oceanografía comunitaria basada en la observación del oleaje, el comportamiento de aves marinas y los vientos que descienden de la Sierra para una pesca artesanal sostenible.',
+      simpleExplanation: 'Los pescadores de Taganga saben si hay peces y si el mar es seguro mirando el color de la espuma y el vuelo de los pájaros. Si el viento sopla fuerte contra las piedras, no echan la red para no romper los corales.',
+      sampleQuestions: [
+        {
+          q: '¿Cómo predicen los pescadores que el cardumen está a gran profundidad?',
+          ans: 'Observan el vuelo de las gaviotas: si vuelan en círculos cerrados pero no se lanzan en picada al agua, y el mar tiene un tono verdoso, indica corriente fría del norte y cardumen hondo.',
+          quote: '"Si el agua se torna verdosa y las gaviotas vuelan en círculo cerrado sin lanzarse en picada, el cardumen de cojinúa está profundo..."',
+          anchor: 'Párrafo 1 — Observación de aves y agua'
+        },
+        {
+          q: '¿Por qué no se debe tirar el chinchorro cuando sopla la "Brisa Loca"?',
+          ans: 'Porque las rachas cortas del viento empujan las redes hacia los arrecifes rocosos y corales, destrozando el aparejo y dañando el ecosistema submarino.',
+          quote: '"Cuando empieza a soplar en rachas cortas, las redes de chinchorro no deben tirarse porque la fuerza del oleaje las enreda contra el arrecife coralino."',
+          anchor: 'Párrafo 2 — Viento y arrecifes'
+        },
+        {
+          q: '¿Cuál es la lección de sostenibilidad de este saber?',
+          ans: 'Que no se pesca a toda costa: cuando la marea o el viento avisan peligro o escasez, el pescador tradicional acata la pausa natural.',
+          quote: '"...la sostenibilidad pesquera depende de respetar las pausas que la naturaleza impone: no se sale a pescar cuando la marea exige reposo."',
+          anchor: 'Párrafo 3 — Veda ética'
+        }
+      ],
+      outOfDomainQuestion: {
+        q: '¿Cuál es la tasa de interés para créditos bancarios de motores marinos?',
+        ans: 'Información no disponible en la fuente: Este saber aborda exclusivamente la observación oceanográfica artesanal, vientos y mareas en la bahía de Taganga.',
+        explanation: 'No se generan datos financieros no contenidos en el testimonio del pescador mayor.'
+      },
+      slides: [
+        {
+          number: 1,
+          title: 'Oceanografía Comunitaria en Taganga',
+          content: 'Antes del amanecer, el mirador del cerro permite leer el color del mar y anticipar las corrientes submarinas del Caribe.',
+          quote: '"En la bahía de Taganga, el mar se lee con el cuerpo."',
+          teachingNote: 'Fomentar el valor de la observación empírica frente al instrumentalismo ciego.',
+          sourceAnchor: 'Patrón Marino Vásquez'
+        },
+        {
+          number: 2,
+          title: 'El Viento de la Sierra y el Chinchorro',
+          content: 'La "Brisa Loca" desciende encajonada de los cerros. Respetar su fuerza evita la destrucción de los arrecifes coralinos de la bahía.',
+          teachingNote: 'Relacionar la orografía de la Sierra Nevada con el microclima marino de Taganga.',
+          sourceAnchor: 'Párrafo 2 — Vientos locales'
+        }
+      ],
+      learningGuide: {
+        keyConcepts: [
+          { term: 'Chinchorro tradicional', definition: 'Red playera artesanal de arrastre operada colectivamente desde la orilla.' },
+          { term: 'Brisa Loca', definition: 'Viento catabático que baja con violencia desde las laderas de la Sierra hacia el mar.' },
+          { term: 'Veda voluntaria', definition: 'Decisión comunitaria de suspender la faena por respeto a los ciclos biológicos.' }
+        ],
+        reflectionQuestions: [
+          '¿Cómo conviven la pesca artesanal tradicional y el turismo en las bahías del Caribe?',
+          '¿Por qué las vedas éticas voluntarias son más efectivas que las prohibiciones externas?'
+        ],
+        classroomActivity: 'Mapeo participativo de vientos dominantes y zonas de calado artesanal en el litoral costero.'
+      },
+      podcastTranscript: [
+        {
+          speaker: 'Patrón Marino Vásquez',
+          role: 'Pescador Mayor',
+          time: '00:00 - 00:40',
+          text: 'Uno mira la gaviota. Si la gaviota no se tira, el pez no está para nosotros hoy. Hay que saber esperar en la orilla sin desesperarse.'
+        }
+      ],
+      conceptNodes: [
+        { id: 'mar', label: 'Mar Caribe', category: 'territorio', description: 'Bahía de Taganga.', connections: ['vientos', 'peces'] },
+        { id: 'vientos', label: 'Brisa Loca', category: 'principio', description: 'Vientos encajonados de la Sierra.', connections: ['redes'] },
+        { id: 'redes', label: 'Chinchorro Tradicional', category: 'practica', description: 'Aparejo de arrastre.', connections: ['veda'] },
+        { id: 'peces', label: 'Cardumen de Cojinúa', category: 'herramienta', description: 'Faena marina comunitaria.', connections: ['mar'] },
+        { id: 'veda', label: 'Veda Ética', category: 'origen', description: 'Respeto al reposo del mar.', connections: ['mar'] }
+      ],
+      videoStoryboard: [
+        { scene: 1, visual: 'Pescadores jalando el chinchorro al ritmo de las olas en la ensenada.', narration: '"El mar no se explota, se comprende."', note: 'Tomas de agua turquesa y redes artesanales.' }
+      ]
+    }
+  },
+
+  // 4. SEMILLAS CRIOLLAS (Comunidades Campesinas)
+  {
+    id: 'know_04_semillas',
+    title: 'Guía de selección de semillas criollas adaptadas a sequía en Bosque Seco',
+    type: 'documento',
+    communityIds: ['comm_campesinos'],
+    communityNames: ['Comunidades Campesinas y Agroecológicas'],
+    author: 'Asociación de Guardianas de Semillas',
+    authorRole: 'Red Campesina',
+    authorUserId: 'user_custodian_campo',
+    isCommunityCollectiveKnowledge: true,
+    date: '15 Oct 2026',
+    permissions: {
+      consultation: 'community',
+      downloadAllowed: true,
+      aiQueryAllowed: 'derived_approval_required',
+      derivativeGenerationAllowed: true,
+      derivativePublicationApprovalRequired: true,
+      reusableForEducation: true
+    },
+    description: 'Protocolo comunitario de conservación de variedades de maíz cariaco, fríjol cuarentano y ajonjolí con alta resiliencia térmica.',
+    excerptForPublic: 'Documento técnico-comunitario sobre almacenamiento en tinajas de barro con ceniza de fogón para evitar polillas sin insecticidas químicos.',
+    fullContent: `La selección de la semilla se realiza directamente en la mata durante la cosecha, nunca en el saco amontonado. Se eligen las mazorcas del centro de la planta que resistieron las semanas más secas de agosto sin doblar la caña ni presentar plagas.
+
+Para el curado tradicional, las semillas se secan a la sombra bajo la enramada del patio durante cuatro días. Luego se introducen en tinajas de barro previamente curadas con humo de leña de guayacán y se mezclan con una capa fina de ceniza tamizada de fogón y hojas secas de anamú. La ceniza absorbe la humedad residual e impide que los gorgojos proliferen.
+
+Esta práctica garantiza autonomía alimentaria campesina frente al cambio climático y evita que los agricultores dependan de paquetes comerciales costosos de semillas híbridas estériles.`,
+    tags: ['Semillas Criollas', 'Resiliencia Climática', 'Bosque Seco', 'Soberanía Alimentaria'],
+    status: 'approved',
+    approvals: [
+      {
+        communityId: 'comm_campesinos',
+        communityName: 'Comunidades Campesinas y Agroecológicas',
+        custodianId: 'user_custodian_campo',
+        custodianName: 'Don Abelardo Solano',
+        status: 'approved',
+        decisionDate: '16 Oct 2026',
+        note: 'Aprobado para intercambio agroecológico entre redes comunitarias verificadas.'
+      }
+    ],
+    authorizedUserIds: ['user_custodian_campo'],
+    mediaUrl: '/assets/photos/ciencia_campo_experimental_agronomia.jpg',
+    educationalData: {
+      summary: 'Metodología campesina de selección en pie de semillas de maíz cariaco y fríjol adaptadas a estrés térmico, curadas con ceniza de fogón y tinajas ahumadas sin pesticidas.',
+      simpleExplanation: 'Las semillas no se compran en bolsas plásticas: se escogen las mejores plantas que aguantaron el verano en el campo. Se guardan en tinajas de barro con ceniza y hojas de anamú para que ningún gorgojo se las coma.',
+      sampleQuestions: [
+        {
+          q: '¿Dónde se debe seleccionar la semilla para la próxima siembra?',
+          ans: 'Directamente en la planta en pie durante la cosecha, buscando las matas del centro del lote que resistieron la sequía de agosto sin doblarse ni enfermar.',
+          quote: '"La selección de la semilla se realiza directamente en la mata durante la cosecha, nunca en el saco amontonado."',
+          anchor: 'Párrafo 1 — Selección en mata'
+        },
+        {
+          q: '¿Cómo se protegen las semillas de los gorgojos sin usar venenos químicos?',
+          ans: 'Se colocan en tinajas de barro curadas con humo de guayacán, mezcladas con ceniza cernida de fogón y hojas de anamú, lo que absorbe la humedad e inhibe los insectos.',
+          quote: '"...se mezclan con una capa fina de ceniza tamizada de fogón y hojas secas de anamú. La ceniza absorbe la humedad residual e impide que los gorgojos proliferen."',
+          anchor: 'Párrafo 2 — Curado con ceniza'
+        }
+      ],
+      outOfDomainQuestion: {
+        q: '¿Cuál es la dosis recomendada de Glifosato para el deshierbe?',
+        ans: 'Información no disponible en la fuente: Las comunidades agroecológicas guardianas de semillas rechazan el uso de herbicidas sintéticos por degradar el suelo y contaminar el banco genético criollo.',
+        explanation: 'Se rechaza información contradictoria con los principios agroecológicos del documento.'
+      },
+      slides: [
+        {
+          number: 1,
+          title: 'Guardianas de Semillas Criollas',
+          content: 'El banco de semillas de una comunidad es su mayor tesoro de soberanía alimentaria frente al calentamiento global.',
+          quote: '"Seleccionar en pie es guardar la memoria de la planta que resistió la sed."',
+          teachingNote: 'Analizar la diferencia entre patentes corporativas y patrimonio colectivo campesino.',
+          sourceAnchor: 'Red de Guardianas de Semillas'
+        }
+      ],
+      learningGuide: {
+        keyConcepts: [
+          { term: 'Semilla criolla', definition: 'Variedad vegetal adaptada durante generaciones a las condiciones del suelo local.' },
+          { term: 'Curado con ceniza', definition: 'Método natural higroscópico e insectífugo para almacenamiento hermético en barro.' }
+        ],
+        reflectionQuestions: [
+          '¿Qué riesgos trae para una región depender de semillas híbridas no reproductibles?'
+        ],
+        classroomActivity: 'Práctica de clasificación de semillas nativas y elaboración de recipientes de barro curado.'
+      },
+      podcastTranscript: [
+        {
+          speaker: 'Don Abelardo Solano',
+          role: 'Guardián Campesino',
+          time: '00:00 - 00:35',
+          text: 'Si usted pierde su semilla, pierde su libertad. El que tiene su tinaja con maíz cariaco en el patio no le tiene miedo a la sequía.'
+        }
+      ],
+      conceptNodes: [
+        { id: 'semilla', label: 'Semilla Criolla', category: 'herramienta', description: 'Variedades de maíz y fríjol.', connections: ['ceniza', 'soberania'] },
+        { id: 'ceniza', label: 'Curado con Ceniza', category: 'practica', description: 'Protección natural de tinajas.', connections: ['semilla'] },
+        { id: 'soberania', label: 'Autonomía Alimentaria', category: 'principio', description: 'Independencia de insumos.', connections: ['clima'] },
+        { id: 'clima', label: 'Bosque Seco Tropical', category: 'territorio', description: 'Ecosistema resiliente.', connections: ['semilla'] }
+      ],
+      videoStoryboard: [
+        { scene: 1, visual: 'Mazorcas de maíz cariaco secándose bajo la enramada de un patio campesino.', narration: '"Cada grano es un pacto con el futuro del alimento."', note: 'Luz dorada de atardecer.' }
+      ]
+    }
+  },
+
+  // 5. MATERIAL COMPARTIDO ENTRE DOS COMUNIDADES (Sierra Nevada + Pescadores Taganga)
+  {
+    id: 'know_06_cuencas_compartidas',
+    title: 'Acuerdo biocomunitario de agua limpia: De la cuenca alta del río Manzanares al mar de Taganga',
+    type: 'documento',
+    communityIds: ['comm_sierra', 'comm_pescadores'], // Multi-comunidad! Requiere consenso de ambas
+    communityNames: ['Pueblos Indígenas de la Sierra Nevada', 'Comunidades de Pescadores Artesanales de Taganga'],
+    author: 'Mamo Senen & Patrón Marino Vásquez',
+    authorRole: 'Autoridades Colectivas Interculturales',
+    authorUserId: 'user_custodian_sierra',
+    isCommunityCollectiveKnowledge: true,
+    date: '08 Nov 2026',
+    permissions: {
+      consultation: 'restricted',
+      downloadAllowed: false,
+      aiQueryAllowed: 'derived_approval_required',
+      derivativeGenerationAllowed: true,
+      derivativePublicationApprovalRequired: true,
+      reusableForEducation: true
+    },
+    description: 'Pacto intercultural entre comunidades de la serranía y el mar para monitorear caudales ecológicos y evitar sedimentación que asfixie los pastos marinos y arrecifes.',
+    excerptForPublic: 'Acuerdo biocomunitario de cuenca y mar. Requiere autorización explícita de AMBAS comunidades para consulta completa.',
+    fullContent: `El agua que nace en la estrella fluvial de la Sierra Nevada desemboca en el mar que alimenta las redes de los pescadores. No puede haber abundancia de peces en Taganga si la cabecera del río baja envenenada con basuras o turbia por deforestación.
+
+Este documento sella el compromiso mutuo: los pueblos de la serranía custodian las zonas de recarga hídrica y no desvían los cursos naturales; la asociación de pescadores se compromete a no verter aceites de embarcaciones y a mantener limpios los estuarios de desembocadura.
+
+Cuando dos pueblos reconocen que el río y el mar son un solo cuerpo vivo, las decisiones no se toman por separado: cualquier autorización sobre este conocimiento exige la aprobación consensuada de ambos custodios.`,
+    tags: ['Cuenca y Mar', 'Acuerdo Biocomunitario', 'Agua Limpia', 'Gobernanza Compartida', 'Sierra Nevada', 'Taganga'],
+    status: 'pending_review', // PENDIENTE DE CONSENSO: Sierra ya aprobó, Pescadores pendiente!
+    approvals: [
+      {
+        communityId: 'comm_sierra',
+        communityName: 'Pueblos Indígenas de la Sierra Nevada',
+        custodianId: 'user_custodian_sierra',
+        custodianName: 'Mamo Senen',
+        status: 'approved',
+        decisionDate: '09 Nov 2026',
+        note: 'Sierra Nevada otorga su conformidad territorial.'
+      },
+      {
+        communityId: 'comm_pescadores',
+        communityName: 'Comunidades de Pescadores Artesanales de Taganga',
+        custodianId: 'user_member_pesca',
+        custodianName: 'Patrón Marino Vásquez',
+        status: 'pending', // PENDIENTE! Por eso no se publica solo
+        note: 'Pendiente de deliberación en asamblea de la playa de Taganga.'
+      }
+    ],
+    authorizedUserIds: ['user_custodian_sierra', 'user_member_pesca'],
+    mediaUrl: '/assets/photos/territorio_paneles_solares_comunitarios.jpg',
+    educationalData: {
+      summary: 'Modelo de gobernanza territorial compartida cuenca-océano que vincula el cuidado forestal de montaña con la productividad marina de la bahía costera.',
+      simpleExplanation: 'La Sierra y el mar están conectados por el mismo río. Los indígenas cuidan el nacimiento en lo alto y los pescadores cuidan la desembocadura en la playa. Ninguno puede decidir solo sin el consentimiento del otro.',
+      sampleQuestions: [
+        {
+          q: '¿Por qué este acuerdo requiere dos autorizaciones distintas para publicarse?',
+          ans: 'Porque pertenece a dos comunidades territoriales distintas (Sierra Nevada y Pescadores). El principio de autonomía comunitaria prohíbe que un custodio imponga decisiones sobre un saber compartido sin la aprobación del otro.',
+          quote: '"...cualquier autorización sobre este conocimiento exige la aprobación consensuada de ambos custodios."',
+          anchor: 'Párrafo 3 — Consenso bicultural'
+        },
+        {
+          q: '¿Qué relación existe entre la deforestación en la serranía y la pesca en Taganga?',
+          ans: 'Si se deforesta la montaña, las lluvias arrastran sedimentos y lodo que enturbian el agua marina, asfixiando los pastos submarinos y ahuyentando los cardúmenes de peces.',
+          quote: '"No puede haber abundancia de peces en Taganga si la cabecera del río baja envenenada con basuras o turbia por deforestación."',
+          anchor: 'Párrafo 1 — Conexión cuenca-mar'
+        }
+      ],
+      outOfDomainQuestion: {
+        q: '¿Cuál es el valor catastral de los predios ribereños?',
+        ans: 'Información no disponible en la fuente: Este acuerdo es un pacto ecológico y cultural de gobernanza del agua, no un registro inmobiliario.',
+        explanation: 'El sistema delimita estrictamente el alcance biocultural del pacto.'
+      },
+      slides: [
+        {
+          number: 1,
+          title: 'Un Solo Cuerpo Vivo: Sierra y Océano',
+          content: 'El río Manzanares une dos culturas con una sola responsabilidad: garantizar que el agua que nace pura llegue limpia al arrecife de Taganga.',
+          quote: '"El río y el mar son un solo cuerpo vivo."',
+          teachingNote: 'Ilustrar el concepto de cuenca hidrográfica integrada desde una mirada intercultural.',
+          sourceAnchor: 'Pacto de Agua Limpia'
+        }
+      ],
+      learningGuide: {
+        keyConcepts: [
+          { term: 'Continuo cuenca-mar', definition: 'Enfoque ecológico que vincula el nacimiento fluvial con la zona estuarina y arrecifal.' },
+          { term: 'Consentimiento bicultural', definition: 'Obligatoriedad de doble aprobación comunitaria para conocimientos compartidos.' }
+        ],
+        reflectionQuestions: [
+          '¿Por qué las divisiones político-administrativas convencionales fracasan al gestionar cuencas compartidas?'
+        ],
+        classroomActivity: 'Simulación de mesa de concertación de aguas entre representantes de cuenca alta y pescadores costeros.'
+      },
+      podcastTranscript: [
+        {
+          speaker: 'Mamo Senen',
+          role: 'Custodio Sierra',
+          time: '00:00 - 00:30',
+          text: 'Nosotros desde arriba mandamos el agua fresca. Si el pescador la recibe sucia, la culpa es de la falta de acuerdo.'
+        },
+        {
+          speaker: 'Patrón Marino',
+          role: 'Custodio Taganga',
+          time: '00:31 - 01:00',
+          text: 'Y nosotros en la playa cuidamos el mangle para que el pez desove. Ambas manos lavan la misma batea.'
+        }
+      ],
+      conceptNodes: [
+        { id: 'sierra', label: 'Sierra Nevada', category: 'territorio', description: 'Nacimiento de cuencas.', connections: ['rio', 'consenso'] },
+        { id: 'taganga', label: 'Mar de Taganga', category: 'territorio', description: 'Bahía y arrecifes.', connections: ['rio', 'consenso'] },
+        { id: 'rio', label: 'Río Conector', category: 'practica', description: 'Flujo hídrico compartido.', connections: ['consenso'] },
+        { id: 'consenso', label: 'Doble Autorización', category: 'principio', description: 'Pacto obligatorio de ambas custodias.', connections: ['sierra', 'taganga'] }
+      ],
+      videoStoryboard: [
+        { scene: 1, visual: 'Gotas de agua cayendo de una hoja de frailejón en la sierra que se transforman en olas rompiendo en la arena de Taganga.', narration: '"El agua no tiene fronteras, tiene custodios."', note: 'Transición fluida de montaña a mar.' }
+      ]
+    }
+  },
+
+  // 6. ACUERDO RESERVADO (Sierra Nevada - Privado, sin permiso IA)
+  {
+    id: 'know_07_acuerdos_internos',
+    title: 'Actas reservadas de ordenamiento espiritual y pagamentos en la Línea Negra',
+    type: 'documento',
+    communityIds: ['comm_sierra'],
+    communityNames: ['Pueblos Indígenas de la Sierra Nevada'],
+    author: 'Consejo Mayor de Autoridades Tradicionales',
+    authorRole: 'Autoridades Espirituales',
+    authorUserId: 'user_custodian_sierra',
+    isCommunityCollectiveKnowledge: true,
+    date: '12 Sep 2026',
+    permissions: {
+      consultation: 'private',
+      downloadAllowed: false,
+      aiQueryAllowed: 'none', // IA TOTALMENTE PROHIBIDA
+      derivativeGenerationAllowed: false,
+      derivativePublicationApprovalRequired: false,
+      reusableForEducation: false
+    },
+    description: 'Documento interno de gobierno propio y deliberación espiritual sobre sitios de pagamento sagrados.',
+    excerptForPublic: 'Contenido reservado bajo estricta custodia tradicional. Metadatos sensibles protegidos.',
+    fullContent: `Este documento contiene deliberaciones reservadas de las autoridades espirituales sobre sitios sagrados de la Línea Negra. Su consulta está restringida estrictamente a los custodios acreditados y queda absolutamente prohibido su procesamiento, lectura o análisis mediante modelos de inteligencia artificial o algoritmos externos bajo ninguna circunstancia.`,
+    tags: ['Línea Negra', 'Sitios Sagrados', 'Gobierno Propio', 'Custodia Reservada'],
+    status: 'approved',
+    approvals: [
+      {
+        communityId: 'comm_sierra',
+        communityName: 'Pueblos Indígenas de la Sierra Nevada',
+        custodianId: 'user_custodian_sierra',
+        custodianName: 'Mamo Senen',
+        status: 'approved',
+        decisionDate: '13 Sep 2026',
+        note: 'Bajo custodia espiritual permanente. Prohibido acceso público e IA.'
+      }
+    ],
+    authorizedUserIds: ['user_custodian_sierra'],
+    educationalData: {
+      summary: 'Documento confidencial con exclusión absoluta de IA y de consulta pública.',
+      simpleExplanation: 'Este contenido es de custodia espiritual reservada para las autoridades tradicionales. La plataforma no permite su procesamiento con inteligencia artificial ni su divulgación externa.',
+      sampleQuestions: [],
+      outOfDomainQuestion: {
+        q: '¿Qué sitios de pagamento exactos están descritos?',
+        ans: 'Acceso Denegado por Soberanía Cultural: La comunidad titular prohibió explícitamente el procesamiento de este saber con modelos de inteligencia artificial.',
+        explanation: 'El sistema bloquea la consulta y protege la privacidad comunitaria.'
+      },
+      slides: [],
+      learningGuide: { keyConcepts: [], reflectionQuestions: [], classroomActivity: '' },
+      podcastTranscript: [],
+      conceptNodes: [],
+      videoStoryboard: []
+    }
+  }
+];
+
+export const INITIAL_ACCESS_REQUESTS: AccessRequest[] = [
+  {
+    id: 'req_01',
+    userId: 'user_researcher',
+    userName: 'Carlos Mendoza',
+    userRole: 'Estudiante Investigador',
+    userEmail: 'cmendoza@unimagdalena.edu.co',
+    userOrganization: 'UNIMAGDALENA · Semillero ALUNA IA',
+    knowledgeId: 'know_01_terrazas',
+    knowledgeTitle: 'Prácticas de siembra en terrazas y respeto a los ciclos de lluvia',
+    communityId: 'comm_sierra',
+    communityName: 'Pueblos Indígenas de la Sierra Nevada',
+    requestDate: '11 Nov 2026',
+    purpose: 'Investigación académica sobre hidrodinámica de laderas y diálogo intercultural de saberes.',
+    requestedPermissions: {
+      consultation: true,
+      aiProcessing: true,
+      derivatives: true
+    },
+    status: 'pending'
+  }
+];
+
+export const INITIAL_AFFILIATION_REQUESTS: AffiliationRequest[] = [
+  {
+    id: 'aff_01',
+    userId: 'user_researcher',
+    userName: 'Carlos Mendoza',
+    communityId: 'comm_sierra',
+    communityName: 'Pueblos Indígenas de la Sierra Nevada',
+    requestDate: '09 Nov 2026',
+    rationale: 'Solicito vinculación como investigador invitado para apoyar el registro pedagógico de bioindicadores.',
+    status: 'pending'
+  }
+];
+
+export const INITIAL_AI_ARTIFACTS: AILabArtifact[] = [
+  {
+    id: 'art_01_pres',
+    knowledgeId: 'know_02_boga',
+    knowledgeTitle: 'Cantos de boga y memoria de la navegación fluvial en el Magdalena',
+    communityIds: ['comm_afro'],
+    communityName: 'Comunidades Afrodescendientes del Litoral Caribe',
+    type: 'transform',
+    title: 'Secuencia Pedagógica: La Polirritmia del Río Magdalena',
+    summary: 'Guía de aprendizaje generada con apoyo de Ceiba a partir de los testimonios de cantoras de boga. Permanece como borrador sujeto a revisión de custodia.',
+    generatedAt: '12 Nov 2026 18:30',
+    authorUserId: 'user_researcher',
+    authorName: 'Carlos Mendoza',
+    status: 'draft_pending_review',
+    public: false,
+    transformMeta: {
+      audience: 'Jóvenes',
+      level: 'Inicial',
+      objective: 'Comprender el valor rítmico y comunitario de los cantos de boga en el río Magdalena.',
+      format: 'Guía de aprendizaje',
+      language: 'Español'
+    },
+    custodianFeedback: 'Pendiente de revisión por Faustina Palacios (Custodia Afrocaribe).'
+  },
+  {
+    id: 'art_02_sierra_guia',
+    knowledgeId: 'know_01_terrazas',
+    knowledgeTitle: 'Prácticas de siembra en terrazas y respeto a los ciclos de lluvia',
+    communityIds: ['comm_sierra'],
+    communityName: 'Pueblos Indígenas de la Sierra Nevada',
+    type: 'transform',
+    title: 'Guía Educativa: Terrazas de Piedra y Cuidado del Agua en Cuencas Altas',
+    summary: 'Transformación pedagógica para jóvenes (Nivel Inicial) sobre retención de suelo en menguante y cercas vivas. Borrador sujeto a aprobación de la custodia de Sierra Nevada.',
+    generatedAt: '14 Nov 2026 10:15',
+    authorUserId: 'user_member_sierra',
+    authorName: 'Aura Villafaña',
+    status: 'draft_pending_review',
+    public: false,
+    transformMeta: {
+      audience: 'Jóvenes',
+      level: 'Inicial',
+      objective: 'Explicar la función ecológica y espiritual de las terrazas de piedra sin cemento.',
+      format: 'Guía de aprendizaje',
+      language: 'Español'
+    },
+    custodianFeedback: 'Pendiente de revisión exclusivamente por Mamo Senen (Custodio Sierra Nevada).'
+  }
+];
+
+export const WELLNESS_ITEMS: WellnessItem[] = [
+  {
+    id: 'well_01',
+    category: 'orientacion',
+    title: 'Orientación en Diálogo Intercultural de Salud',
+    description: 'Espacio orientativo para articular medicina tradicional comunitaria con servicios de salud de la región.',
+    communityTarget: 'Poblaciones rurales, pescadores e indígenas',
+    channelInfo: 'Centro de Bienestar Universitario UNIMAGDALENA',
+    status: 'en_definicion'
+  },
+  {
+    id: 'well_02',
+    category: 'necesidad',
+    title: 'Canal de Reporte Solidario por Emergencias Climáticas',
+    description: 'Canal para reportar sequías extremas, marejadas o desabastecimiento en acueductos veredales.',
+    communityTarget: 'Pescadores y campesinos del Magdalena',
+    channelInfo: 'Mesa de Concertación de Agua y Territorio',
+    status: 'en_definicion'
+  },
+  {
+    id: 'well_03',
+    category: 'apoyo',
+    title: 'Red de Cuidado a Sabedores y Liderazgos Mayores',
+    description: 'Acompañamiento intergeneracional y apoyo a la salud integral de abuelos y abuelas guardianes de memoria.',
+    communityTarget: 'Sabedores mayores de las comunidades',
+    channelInfo: 'Programa de Extensión Universitaria UNIMAGDALENA',
+    status: 'en_definicion'
+  },
+  {
+    id: 'well_04',
+    category: 'canales',
+    title: 'Directorio de Enlaces Institucionales y Defensoría',
+    description: 'Canales de atención directa con personerías y entidades gubernamentales para garantías territoriales.',
+    communityTarget: 'Todas las comunidades participantes',
+    channelInfo: 'Línea de Enlace Institucional: (605) 438-1000',
+    status: 'en_definicion'
+  }
+];

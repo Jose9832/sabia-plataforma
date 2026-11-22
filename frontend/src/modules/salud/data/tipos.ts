@@ -3,11 +3,12 @@ export type IdComunidad = "indigena" | "afro" | "campesina";
 export type Visibilidad = "adentro" | "afuera";
 export type Ventana = "adentro" | "afuera";
 
+/** Persona con sesión en ALUNA. `comunidad` sale de su membresía verificada (o null). */
 export interface Usuario {
-  id: number;
-  numero_identificacion: string;
+  id: number | string;
+  numero_identificacion?: string;
   nombre: string;
-  comunidad: IdComunidad;
+  comunidad: IdComunidad | null;
 }
 
 export interface Sesion {
