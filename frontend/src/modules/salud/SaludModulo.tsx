@@ -63,11 +63,22 @@ export function SaludModulo({ sesion }: { sesion: Sesion | null }) {
     return () => clearTimeout(t);
   }, [nav.n]);
 
+  /* El menú inferior y el botón de Ceiba son fijos a la ventana: solo se muestran mientras el
+     módulo ocupa la pantalla, para no tapar el contenido de ALUNA que está arriba o abajo. */
+  const [enVista, setEnVista] = useState(true);
+  useEffect(() => {
+    const nodo = raiz.current;
+    if (!nodo || typeof IntersectionObserver === "undefined") return;
+    const obs = new IntersectionObserver(([e]) => setEnVista(e.isIntersecting), { rootMargin: "0px 0px -35% 0px" });
+    obs.observe(nodo);
+    return () => obs.disconnect();
+  }, []);
+
   const Vista = vistas[nav.pantalla] ?? Inicio;
 
   return (
     <div className="sabia-modulo" ref={raiz}>
-    <div className={`telefono ${conVentana ? nav.ventana ?? "afuera" : "sin-ventana"}${conFrase ? " con-frase" : ""}`} id="telefono">
+    <div className={`telefono ${conVentana ? nav.ventana ?? "afuera" : "sin-ventana"}${conFrase ? " con-frase" : ""}${enVista ? "" : " fuera-de-vista"}`} id="telefono">
       <Encabezado />
       {/* key: cada navegación vuelve a montar el contenido y repite la micro-animación de entrada */}
       <main className={`contenido${animar ? " entrada" : ""}`} id="contenido" data-pantalla={nav.pantalla} key={nav.n}>

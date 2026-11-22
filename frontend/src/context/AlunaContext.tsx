@@ -180,6 +180,43 @@ const VISITANTE_ANONIMO: User = {
   bio: 'Inicia sesión para participar, solicitar accesos o aportar saberes.'
 };
 
+/* ---------- Rutas en la barra de direcciones (History API) ---------- */
+const RUTAS: Record<ActiveScreen, string> = {
+  welcome: '/',
+  login: '/ingresar',
+  register: '/registro',
+  dashboard: '/panel',
+  communities: '/comunidades',
+  community_detail: '/comunidades',
+  my_community: '/mi-comunidad',
+  library: '/biblioteca',
+  upload: '/aportar',
+  permissions: '/permisos',
+  requests: '/solicitudes',
+  ai_lab: '/ceiba',
+  custodian: '/custodia',
+  profile: '/perfil',
+  wellness: '/bienestar'
+};
+
+/** Pantalla (y comunidad abierta) que corresponde a una dirección. Direcciones desconocidas → inicio. */
+function pantallaDesdeRuta(ruta: string): { pantalla: ActiveScreen; comunidad: string | null } {
+  const limpia = ruta.replace(/\/+$/, '') || '/';
+  const detalle = limpia.match(/^\/comunidades\/([^/]+)$/);
+  if (detalle) return { pantalla: 'communities', comunidad: decodeURIComponent(detalle[1]) };
+  const encontrada = (Object.keys(RUTAS) as ActiveScreen[]).find(k => RUTAS[k] === limpia && k !== 'community_detail');
+  return { pantalla: encontrada || 'welcome', comunidad: null };
+}
+
+function rutaDePantalla(pantalla: ActiveScreen, comunidad: string | null): string {
+  if ((pantalla === 'communities' || pantalla === 'community_detail') && comunidad) {
+    return `/comunidades/${encodeURIComponent(comunidad)}`;
+  }
+  return RUTAS[pantalla] || '/';
+}
+
+const rutaInicial = typeof window === 'undefined' ? { pantalla: 'welcome' as ActiveScreen, comunidad: null } : pantallaDesdeRuta(window.location.pathname);
+
 /**
  * Envía la cola sin conexión del módulo de Salud SABIA aunque la persona no abra Bienestar.
  * Se importa bajo demanda para no cargar el módulo completo al abrir la app.
@@ -231,8 +268,8 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [aiArtifacts, setAiArtifacts] = useState<AILabArtifact[]>(inicial.aiArtifacts);
   const [wellnessItems, setWellnessItems] = useState<WellnessItem[]>(inicial.wellnessItems);
 
-  const [activeScreen, setActiveScreenState] = useState<ActiveScreen>('welcome');
-  const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
+  const [activeScreen, setActiveScreenState] = useState<ActiveScreen>(rutaInicial.pantalla);
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(rutaInicial.comunidad);
   const [selectedKnowledgeIdForLab, setSelectedKnowledgeIdForLab] = useState<string | null>(null);
   const [selectedKnowledgeForDetail, setSelectedKnowledgeForDetail] = useState<KnowledgeItem | null>(null);
   const [themeMode, setThemeModeState] = useState<'light' | 'dark'>('light');
@@ -244,6 +281,27 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [pendingSyncCount, setPendingSyncCount] = useState<number>(cola.de().length);
 
   const demoModeEnabled = isDemoProfilesEnabled();
+
+  // La pantalla activa se refleja en la dirección: se puede compartir un enlace, recargar
+  // sin volver al inicio y usar los botones Atrás/Adelante del navegador.
+  const primeraRuta = useRef(true);
+  useEffect(() => {
+    const ruta = rutaDePantalla(activeScreen, selectedCommunityId);
+    if (window.location.pathname !== ruta) {
+      if (primeraRuta.current) window.history.replaceState(null, '', ruta);
+      else window.history.pushState(null, '', ruta);
+    }
+    primeraRuta.current = false;
+  }, [activeScreen, selectedCommunityId]);
+  useEffect(() => {
+    const alNavegar = () => {
+      const { pantalla, comunidad } = pantallaDesdeRuta(window.location.pathname);
+      setActiveScreenState(pantalla);
+      setSelectedCommunityId(comunidad);
+    };
+    window.addEventListener('popstate', alNavegar);
+    return () => window.removeEventListener('popstate', alNavegar);
+  }, []);
 
   useEffect(() => {
     if (themeMode === 'dark') document.documentElement.classList.add('dark');

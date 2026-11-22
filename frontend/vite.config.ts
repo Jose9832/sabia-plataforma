@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// ALUNA IA · SABIA & CEIBA
+// SABIA (ALUNA IA · SABIA & CEIBA)
 // - En desarrollo, /api se reenvía al backend FastAPI (VITE_PROXY_API, por defecto :8000).
 // - PWA: el Service Worker guarda la app (HTML, JS, CSS, logos) para abrir sin internet.
 //   Los datos se guardan aparte (localStorage / IndexedDB) y lo creado sin señal va a una cola.
@@ -12,19 +12,21 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons.svg', 'icono.svg', 'logo-ceiba.svg'],
+      includeAssets: ['logo-ceiba.svg', 'icons/*.png'],
       manifest: {
-        name: 'ALUNA IA · SABIA & CEIBA',
-        short_name: 'ALUNA',
-        description: 'Plataforma de diálogo de saberes de la Universidad del Magdalena. Funciona sin internet.',
+        name: 'SABIA · Diálogo de Saberes UNIMAGDALENA',
+        short_name: 'SABIA',
+        description: 'Plataforma de diálogo de saberes de la Universidad del Magdalena: saberes bajo custodia comunitaria, Ceiba IA y salud intercultural. Funciona sin internet.',
         lang: 'es-CO',
         start_url: '/',
         display: 'standalone',
         background_color: '#F8FAFC',
-        theme_color: '#004B87',
+        theme_color: '#1D6A4E',
         icons: [
-          { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'assets/logos/aluna_isotipo.png', sizes: '512x512', type: 'image/png', purpose: 'any' }
+          { src: 'icons/icono-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icono-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icono-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icono-app.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }
         ]
       },
       workbox: {

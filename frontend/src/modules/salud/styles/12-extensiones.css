@@ -29,3 +29,11 @@ ul { list-style: disc; }
   .menu-superior { flex-wrap: wrap; justify-content: center; }
   .contenido { padding: 32px 28px 48px; }
 }
+
+/* Menú inferior y botón de Ceiba (fijos a la ventana): se ocultan cuando el módulo no está en pantalla */
+.menu-inferior { transition: opacity .2s ease, transform .2s ease; }
+.telefono.fuera-de-vista .menu-inferior { opacity: 0; pointer-events: none; transform: translateY(24px); }
+.telefono.fuera-de-vista .kora-fab { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .menu-inferior { transition: none; }
+}

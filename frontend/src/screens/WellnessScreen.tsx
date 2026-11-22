@@ -88,7 +88,7 @@ export const WellnessScreen: React.FC = () => {
       <div className="space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-[#004B87] dark:bg-[#132C3E] dark:text-aluna-cyan border border-sky-200 dark:border-[#1E3E54]">
           <ShieldAlert className="w-3.5 h-3.5" />
-          <span>Módulo Independiente en la misma App Shell · Datos Aislados de SABIA y Ceiba</span>
+          <span>Módulo independiente · Datos aislados del repositorio de saberes y de la consulta con IA</span>
         </div>
 
         <h1 className="font-serif font-bold text-3xl sm:text-4xl text-[#06233B] dark:text-white">
@@ -96,7 +96,7 @@ export const WellnessScreen: React.FC = () => {
         </h1>
 
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
-          Este módulo comparte únicamente la sesión básica (<strong className="text-[#06233B] dark:text-white">{currentUser.name}</strong>), la navegación y el sistema visual con SABIA, pero mantiene <strong className="text-[#06233B] dark:text-white">separación total de datos</strong>: ningún requerimiento de orientación o salud ingresa al repositorio cultural ni al motor de consulta <strong>Ceiba</strong>.
+          Este módulo comparte únicamente la sesión básica (<strong className="text-[#06233B] dark:text-white">{currentUser.name}</strong>), la navegación y el sistema visual con SABIA, pero mantiene <strong className="text-[#06233B] dark:text-white">separación total de datos</strong>: ningún requerimiento de orientación o salud ingresa al repositorio cultural ni a la consulta de saberes con IA. La guía de chat <strong>Ceiba</strong> de este módulo responde sin conexión, con reglas propias, y no guarda tus mensajes en el servidor.
         </p>
       </div>
 

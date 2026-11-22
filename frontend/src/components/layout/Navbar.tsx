@@ -129,14 +129,18 @@ export const Navbar: React.FC = () => {
           {/* Izquierda: sello UNIMAGDALENA + divisor + logotipo de ceiba y nombre SABIA */}
           <div 
             onClick={() => setActiveScreen('welcome')}
-            className="flex items-center gap-3 cursor-pointer group shrink-0"
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveScreen('welcome'); } }}
+            role="link"
+            tabIndex={0}
+            aria-label="SABIA · Universidad del Magdalena: ir al inicio"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0"
           >
             <img 
               src="/assets/logos/escudo_unimag_oficial.png" 
               alt="Universidad del Magdalena" 
-              className="w-9 h-9 object-contain shrink-0"
+              className="hidden sm:block w-9 h-9 object-contain shrink-0"
             />
-            <div className="h-7 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
+            <div className="hidden sm:block h-7 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
             <div className="flex items-center gap-2.5">
               {/* Logotipo: árbol de ceiba (frontend/public/logo-ceiba.svg) */}
               <div className="w-9 h-9 rounded-lg bg-white border border-slate-200/80 dark:border-slate-700 p-0.5 flex items-center justify-center shrink-0 shadow-sm">
@@ -158,7 +162,7 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Center: Clean Horizontal Pill Navigation (No line breaks) */}
-          <nav aria-label="Navegación principal" className="hidden lg:flex items-center gap-1">
+          <nav aria-label="Navegación principal" className="hidden xl:flex items-center gap-1">
             {primaryLinks.map((link) => {
               const isActive = activeScreen === link.id || (link.id === 'communities' && activeScreen === 'community_detail');
               return (
@@ -218,7 +222,7 @@ export const Navbar: React.FC = () => {
               onClick={toggleTheme}
               aria-label="Cambiar tema visual"
               title={themeMode === 'light' ? 'Cambiar a Modo Oscuro' : 'Cambiar a Modo Claro Institucional'}
-              className="p-2 rounded-full border border-slate-200 dark:border-[#1E3E54] bg-slate-50 dark:bg-[#132C3E] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#193A50] transition-colors"
+              className="w-10 h-10 inline-flex items-center justify-center rounded-full border border-slate-200 dark:border-[#1E3E54] bg-slate-50 dark:bg-[#132C3E] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#193A50] transition-colors"
             >
               {themeMode === 'light' ? (
                 <Moon className="w-4 h-4 text-[#004B87]" />
@@ -401,8 +405,9 @@ export const Navbar: React.FC = () => {
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-[#06233B] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#132C3E]"
+              className="xl:hidden p-3 rounded-xl text-[#06233B] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#132C3E]"
               aria-label="Menú principal"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -413,7 +418,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white dark:bg-[#0D212E] border-b border-slate-200 dark:border-[#1E3E54] px-4 pt-3 pb-5 space-y-1.5 shadow-lg">
+        <div className="xl:hidden bg-white dark:bg-[#0D212E] border-b border-slate-200 dark:border-[#1E3E54] px-4 pt-3 pb-5 space-y-1.5 shadow-lg">
           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1">
             Navegación Principal
           </div>
