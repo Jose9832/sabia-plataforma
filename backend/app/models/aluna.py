@@ -228,8 +228,11 @@ class CanalBienestar(Base):
 class SolicitudOrientacion(Base):
     """Solicitud orientativa (no clínica) hacia un canal de bienestar. Nunca se indexa en Ceiba."""
     __tablename__ = "solicitudes_orientacion"
+    __table_args__ = (UniqueConstraint("usuario_id", "client_id", name="uq_orientacion_usuario_client"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    # Id generado en el navegador: si la cola sin conexión reenvía la solicitud, no se duplica.
+    client_id: Mapped[str | None] = mapped_column(String(64))
     usuario_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     canal_id: Mapped[str | None] = mapped_column(ForeignKey("canales_bienestar.id", ondelete="SET NULL"))
     descripcion: Mapped[str] = mapped_column(Text)

@@ -217,7 +217,7 @@ def canales(db: DbDep):
 @bienestar.post("/orientations", status_code=status.HTTP_201_CREATED)
 def orientacion(datos: OrientacionIn, db: DbDep, usuario: UsuarioDep):
     """Solicitud orientativa no clínica: se guarda aparte y nunca entra a Ceiba."""
-    out = svc.registrar_orientacion(db, usuario, datos.description, datos.channelId)
+    out = svc.registrar_orientacion(db, usuario, datos.description, datos.channelId, datos.id)
     db.commit()
     return out
 

@@ -450,7 +450,9 @@ CREATE TABLE solicitudes_orientacion (
     descripcion TEXT NOT NULL, 
     estado VARCHAR(20) NOT NULL, 
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+    client_id VARCHAR(64), 
     PRIMARY KEY (id), 
+    CONSTRAINT uq_orientacion_usuario_client UNIQUE (usuario_id, client_id), 
     FOREIGN KEY(canal_id) REFERENCES canales_bienestar (id) ON DELETE SET NULL, 
     FOREIGN KEY(usuario_id) REFERENCES users (id) ON DELETE CASCADE
 );

@@ -117,5 +117,6 @@ class DerivadoIn(_Base):
 
 
 class OrientacionIn(_Base):
+    id: str | None = Field(default=None, max_length=64)
     description: str = Field(min_length=5, max_length=3000)
     channelId: str | None = None

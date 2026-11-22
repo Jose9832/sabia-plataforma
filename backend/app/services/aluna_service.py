@@ -590,10 +590,16 @@ def decidir_derivado(db: Session, usuario: Usuario, output_id: str, aprobar: boo
 # ---------------------------------------------------------------------------
 # Bienestar (aislado de Ceiba y del repositorio cultural)
 # ---------------------------------------------------------------------------
-def registrar_orientacion(db: Session, usuario: Usuario, descripcion: str, canal_id: str | None) -> Dict:
+def registrar_orientacion(db: Session, usuario: Usuario, descripcion: str, canal_id: str | None,
+                          client_id: str | None = None) -> Dict:
+    if client_id:
+        previa = db.scalar(select(SolicitudOrientacion).where(
+            SolicitudOrientacion.usuario_id == usuario.id, SolicitudOrientacion.client_id == client_id))
+        if previa:  # reenvío desde la cola sin conexión: ya estaba registrada
+            return {"id": previa.id, "estado": previa.estado, "duplicado": True}
     if canal_id and not db.get(CanalBienestar, canal_id):
         canal_id = None
-    s = SolicitudOrientacion(usuario_id=usuario.id, canal_id=canal_id, descripcion=descripcion.strip())
+    s = SolicitudOrientacion(usuario_id=usuario.id, canal_id=canal_id, descripcion=descripcion.strip(), client_id=client_id)
     db.add(s)
     db.flush()
     return {"id": s.id, "estado": s.estado}

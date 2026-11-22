@@ -180,6 +180,20 @@ const VISITANTE_ANONIMO: User = {
   bio: 'Inicia sesión para participar, solicitar accesos o aportar saberes.'
 };
 
+/**
+ * Envía la cola sin conexión del módulo de Salud SABIA aunque la persona no abra Bienestar.
+ * Se importa bajo demanda para no cargar el módulo completo al abrir la app.
+ */
+async function enviarColaSalud(authToken: string | null, usuarioId: string): Promise<number> {
+  if (!authToken || usuarioId === 'anon') return 0;
+  try {
+    const { enviarCola } = await import('../modules/salud/lib/cola');
+    return (await enviarCola(authToken, usuarioId)).enviadas;
+  } catch {
+    return 0; // sin señal o sesión vencida: todo sigue guardado en IndexedDB
+  }
+}
+
 const fechaCorta = () => new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
 
 function leerCache(): Bootstrap | null {
@@ -227,7 +241,7 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator === 'undefined' ? true : navigator.onLine);
   const [authToken, setAuthToken] = useState<string | null>(token.leer());
-  const [pendingSyncCount, setPendingSyncCount] = useState<number>(cola.leer().length);
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(cola.de().length);
 
   const demoModeEnabled = isDemoProfilesEnabled();
 
@@ -269,20 +283,55 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (e) {
       if (e instanceof SinConexionError) setIsOnline(false);
       else if (e instanceof ApiError && e.status === 401) {
+        // La sesión venció: las acciones guardadas siguen a nombre de la persona y se
+        // enviarán cuando vuelva a entrar con su cuenta.
+        const guardadas = cola.de().length;
         token.guardar(null);
         setAuthToken(null);
+        setPendingSyncCount(0);
+        if (guardadas) {
+          setToast({ message: `Tu sesión venció. Inicia sesión de nuevo para enviar ${guardadas} acción(es) guardada(s).`, type: 'warning' });
+        }
       }
     }
   }, [aplicar]);
 
+  const enviandoCola = useRef(false);
   const enviarCola = useCallback(async () => {
-    if (!cola.leer().length) return;
-    const { enviadas, rechazadas } = await cola.enviar();
-    setPendingSyncCount(cola.leer().length);
-    if (enviadas) showToast(`Conexión recuperada: se enviaron ${enviadas} acción(es) guardada(s) sin señal.`, 'success');
-    if (rechazadas.length) showToast(`El servidor no aceptó: ${rechazadas[0]}`, 'warning');
-    if (enviadas || rechazadas.length) await refreshFromServer();
+    if (enviandoCola.current || !cola.de().length) return;
+    enviandoCola.current = true;
+    try {
+      const { enviadas, rechazadas, sesionVencida } = await cola.enviar();
+      setPendingSyncCount(cola.de().length);
+      if (enviadas) showToast(`Conexión recuperada: se enviaron ${enviadas} acción(es) guardada(s) sin señal.`, 'success');
+      if (rechazadas.length) showToast(`El servidor no aceptó: ${rechazadas[0]}`, 'warning');
+      if (enviadas || rechazadas.length || sesionVencida) await refreshFromServer();
+    } finally {
+      enviandoCola.current = false;
+    }
   }, [refreshFromServer, showToast]);
+
+  // El contador muestra solo las acciones de quien tiene la sesión abierta.
+  useEffect(() => { setPendingSyncCount(cola.de().length); }, [authToken]);
+
+  // Mientras haya acciones sin enviar, la copia local guarda también los cambios hechos sin señal:
+  // si la persona recarga la página sin conexión, los sigue viendo hasta que se sincronicen.
+  useEffect(() => {
+    if (!pendingSyncCount || currentUserId === 'anon') return;
+    const me = users.find(u => u.id === currentUserId) || null;
+    const copia: Bootstrap = { me, users, communities, knowledgeItems, accessRequests, affiliationRequests, aiArtifacts, wellnessItems };
+    try { localStorage.setItem(`${STORAGE_KEY}_bootstrap`, JSON.stringify(copia)); } catch { /* lleno */ }
+  }, [pendingSyncCount, currentUserId, users, communities, knowledgeItems, accessRequests, affiliationRequests, aiArtifacts, wellnessItems]);
+
+  // Cola del módulo de salud: se envía al abrir, al volver la señal y cada 30 s.
+  const sesionSalud = useRef<{ t: string | null; id: string }>({ t: null, id: 'anon' });
+  sesionSalud.current = { t: authToken, id: currentUserId };
+  const enviarSalud = useCallback(async () => {
+    const { t, id } = sesionSalud.current;
+    const n = await enviarColaSalud(t, id);
+    if (n) showToast(`Salud SABIA: se enviaron ${n} registro(s) guardado(s) sin señal.`, 'success');
+  }, [showToast]);
+  useEffect(() => { void enviarSalud(); }, [authToken, currentUserId, enviarSalud]);
 
   const guardarSesion = useCallback((s: SesionApi) => {
     token.guardar(s.access_token);
@@ -300,10 +349,13 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await refreshFromServer();
     } catch (e) {
       if (e instanceof SinConexionError) {
-        cola.agregar({ method, path, body, descripcion });
-        setPendingSyncCount(cola.leer().length);
         setIsOnline(false);
-        showToast(`Sin conexión: "${descripcion}" quedó guardado y se enviará al volver la señal.`, 'warning');
+        if (cola.agregar({ method, path, body, descripcion })) {
+          setPendingSyncCount(cola.de().length);
+          showToast(`Sin conexión: "${descripcion}" quedó guardado y se enviará al volver la señal.`, 'warning');
+        } else {
+          showToast('Sin conexión: inicia sesión para guardar tus acciones y enviarlas después.', 'warning');
+        }
       } else {
         showToast((e as Error).message, 'error');
         await refreshFromServer();
@@ -323,17 +375,24 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await refreshFromServer();
       await enviarCola();
     })();
-    const alVolver = () => { setIsOnline(true); void enviarCola().then(refreshFromServer); };
+    const alVolver = () => {
+      setIsOnline(true);
+      void enviarCola().then(refreshFromServer);
+      void enviarSalud();
+    };
     const alIrse = () => setIsOnline(false);
     window.addEventListener('online', alVolver);
     window.addEventListener('offline', alIrse);
-    const reintento = setInterval(() => { if (cola.leer().length) void enviarCola(); }, 30000);
+    const reintento = setInterval(() => {
+      if (cola.de().length) void enviarCola();
+      void enviarSalud();
+    }, 30000);
     return () => {
       window.removeEventListener('online', alVolver);
       window.removeEventListener('offline', alIrse);
       clearInterval(reintento);
     };
-  }, [demoModeEnabled, enviarCola, guardarSesion, refreshFromServer]);
+  }, [demoModeEnabled, enviarCola, enviarSalud, guardarSesion, refreshFromServer]);
 
   // ------------------------------------------------------------------
   // Sesión
@@ -362,6 +421,7 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const s = await api<SesionApi>('POST', '/auth/login', { email, password });
       guardarSesion(s);
       await refreshFromServer();
+      void enviarCola();
       showToast(`Sesión iniciada como ${s.user.name} (${s.user.roleLabel}).`, 'success');
       return true;
     } catch (e) {
@@ -835,7 +895,7 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // ------------------------------------------------------------------
   const sendWellnessOrientation = async (description: string, channelId?: string): Promise<boolean> => {
     if (!exigirSesion()) return false;
-    await confirmar('POST', '/wellness/orientations', { description, channelId }, 'Solicitud orientativa de bienestar');
+    await confirmar('POST', '/wellness/orientations', { id: nuevoId('orient'), description, channelId }, 'Solicitud orientativa de bienestar');
     return true;
   };
 
