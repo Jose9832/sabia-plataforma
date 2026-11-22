@@ -188,7 +188,7 @@ export const LoginScreen: React.FC = () => {
           {!demoModeEnabled && (
             <details className="pt-3 border-t border-slate-200 dark:border-[#1E3E54] text-[11px] text-slate-600 dark:text-slate-300">
               <summary className="cursor-pointer font-bold text-[#004B87] dark:text-aluna-cyan">¿Eres del equipo evaluador? Ver cuentas de prueba</summary>
-              <p className="mt-2 leading-relaxed">Toca un correo para usarlo. Contraseña de todas: <code className="font-mono font-bold">aluna2026</code></p>
+              <p className="mt-2 leading-relaxed">Toca un correo para usarlo. La contraseña de estas cuentas te la entrega el equipo del proyecto.</p>
               <ul className="mt-2 space-y-1">
                 {DEMO_USERS.map(u => (
                   <li key={u.id}>

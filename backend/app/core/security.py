@@ -1,21 +1,32 @@
-"""Hash de contraseñas (passlib + bcrypt) y tokens JWT."""
+"""Hash de contraseñas (bcrypt) y tokens JWT.
+
+Se usa bcrypt directamente (passlib ya no tiene mantenimiento). Los hashes existentes
+($2b$…) siguen siendo válidos: el formato es el mismo.
+"""
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 import jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# bcrypt solo considera los primeros 72 bytes de la contraseña.
+_MAX_BYTES = 72
+
+
+def _bytes(clave: str) -> bytes:
+    return clave.encode("utf-8")[:_MAX_BYTES]
 
 
 def hash_clave(clave: str) -> str:
-    return pwd_context.hash(clave)
+    return bcrypt.hashpw(_bytes(clave), bcrypt.gensalt(rounds=12)).decode("ascii")
 
 
-def verificar_clave(clave: str, clave_hash: str) -> bool:
+def verificar_clave(clave: str, clave_hash: str | None) -> bool:
+    if not clave_hash:
+        return False
     try:
-        return pwd_context.verify(clave, clave_hash)
+        return bcrypt.checkpw(_bytes(clave), clave_hash.encode("ascii"))
     except ValueError:
         return False
 

@@ -2,10 +2,11 @@
 
 Toda decisión de permisos se toma aquí, en el servidor: el frontend solo la refleja.
 """
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
 
 from app.core.config import settings
 from app.core.deps import DbDep, UsuarioDep, UsuarioOpcionalDep
+from app.core.limites import limitar_autenticacion
 from app.schemas.aluna import (
     ConsultaCeibaIn,
     Decision,
@@ -19,7 +20,7 @@ from app.schemas.aluna import (
     VinculacionIn,
 )
 from app.services import aluna_service as svc
-from app.services import auth_service
+from app.services import auth_service, demo_service
 from app.services.comun import ErrorNegocio
 
 auth = APIRouter(prefix="/auth", tags=["Autenticación"])
@@ -31,12 +32,12 @@ sistema = APIRouter(tags=["Sistema"])
 
 
 # ---------- Autenticación ----------
-@auth.post("/login")
+@auth.post("/login", dependencies=[Depends(limitar_autenticacion)])
 def login(datos: LoginIn, db: DbDep):
     return auth_service.iniciar_sesion(db, datos.email, datos.password)
 
 
-@auth.post("/register", status_code=status.HTTP_201_CREATED)
+@auth.post("/register", status_code=status.HTTP_201_CREATED, dependencies=[Depends(limitar_autenticacion)])
 def registro(datos: RegistroIn, db: DbDep):
     """Crea la cuenta. Si eligió comunidad, la filiación queda *pendiente* hasta que su custodia la valide."""
     return auth_service.registrar(db, datos.model_dump())
@@ -67,11 +68,7 @@ def bootstrap(db: DbDep, usuario: UsuarioOpcionalDep):
 @sistema.post("/demo/reset")
 def reiniciar_demo(db: DbDep, usuario: UsuarioDep):
     """Restablece los datos de la demostración (solo con perfiles demo habilitados)."""
-    if not settings.ENABLE_DEMO_PROFILES:
-        raise ErrorNegocio("La demostración está deshabilitada en este entorno.", 403)
-    from app.seed import reiniciar_aluna
-
-    reiniciar_aluna(db)
+    demo_service.reiniciar_demostracion(db, usuario)
     return {"ok": True}
 
 

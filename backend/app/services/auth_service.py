@@ -32,7 +32,7 @@ def sesion_para(usuario: Usuario) -> dict:
 def iniciar_sesion(db: Session, email: str, clave: str) -> dict:
     u = db.scalar(select(Usuario).where(func.lower(Usuario.email) == email.strip().lower()))
     if not u or not verificar_clave(clave, u.clave_hash):
-        raise ErrorNegocio("El correo o la contraseña no coinciden. Verifica tus datos o usa un perfil de demostración.", 401)
+        raise ErrorNegocio("El correo o la contraseña no coinciden. Verifica tus datos e inténtalo de nuevo.", 401)
     return sesion_para(u)
 
 

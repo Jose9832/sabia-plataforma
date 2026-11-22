@@ -93,7 +93,7 @@ Variables opcionales: copia `.env.example` a `.env` en la raíz (contraseña de 
 
 ## Perfiles de demostración
 
-Las personas nuevas **crean su cuenta** o **entran como visitantes** (solo ven lo público). Para el equipo evaluador, las cuentas de prueba están plegadas en *Iniciar sesión → ¿Eres del equipo evaluador?*: se entra con el correo y la contraseña **`aluna2026`**. El selector rápido de perfiles del menú se puede volver a activar con `VITE_ENABLE_DEMO_PROFILES=true` al compilar el frontend.
+Las personas nuevas **crean su cuenta** o **entran como visitantes** (solo ven lo público). Para el equipo evaluador, las cuentas de prueba están plegadas en *Iniciar sesión → ¿Eres del equipo evaluador?*: se entra con el correo y la contraseña de prueba: en local es **`aluna2026`** (variable `DEMO_PASSWORD`); en Render la genera el Blueprint y se consulta en *Dashboard → aluna-sabia-ceiba → Environment → DEMO_PASSWORD* (compártela solo con quien evalúa). El selector rápido de perfiles del menú se puede volver a activar con `VITE_ENABLE_DEMO_PROFILES=true` al compilar el frontend.
 
 | Perfil | Correo | Qué demuestra | Salud SABIA |
 |---|---|---|---|
@@ -195,7 +195,7 @@ npm run dev            # http://localhost:5173  (Vite reenvía /api al backend)
 ## Pruebas
 
 ```bash
-# Backend: 18 pruebas (permisos, Ceiba, anti-inyección, validaciones)
+# Backend: 24 pruebas (permisos, Ceiba, anti-inyección, validaciones, seguridad)
 docker compose run --rm --no-deps --entrypoint "python -m pytest -q" backend
 
 # Frontend: 16 pruebas de gobernanza + tipos + compilación
@@ -219,7 +219,9 @@ Cada `git push` a `main` vuelve a publicar la app. En el plan gratis la app se d
 
 ## Producción
 
-- Define `SECRET_KEY`, `POSTGRES_PASSWORD` y `CORS_ORIGINS` reales y pon `ENABLE_DEMO_PROFILES=false` (oculta el selector de perfiles y desactiva `/auth/demo` y `/demo/reset`).
+- Pon `ENVIRONMENT=production`: la API **no arranca** si `SECRET_KEY` es la de ejemplo o tiene menos de 32 caracteres, y oculta `/api/docs` (se puede mostrar con `ENABLE_DOCS=true`).
+- Define `SECRET_KEY`, `POSTGRES_PASSWORD`, `DEMO_PASSWORD` y `CORS_ORIGINS` reales y pon `ENABLE_DEMO_PROFILES=false` (oculta el selector de perfiles y desactiva `/auth/demo` y `/demo/reset`; este último, además, solo lo puede usar el administrador técnico).
+- Seguridad incluida: límite de intentos de inicio de sesión y registro por IP (`RATE_LIMIT_AUTH` intentos cada `RATE_LIMIT_WINDOW_SECONDS` s), cabeceras de seguridad (CSP, `X-Frame-Options`, `nosniff`, HSTS en HTTPS) en la API y en nginx, y contraseñas con bcrypt.
 - Sirve por **HTTPS** (necesario para el Service Worker, el micrófono y la instalación de la PWA).
 - `SEED_ON_START=false` si no quieres los datos de ejemplo.
 - Respaldos: `.\database\scripts\respaldar.ps1` y `.\database\scripts\restaurar.ps1`.

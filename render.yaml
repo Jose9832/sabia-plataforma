@@ -24,8 +24,17 @@ services:
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      # Sin selector de perfiles ni entrada demo sin contraseña en producción.
       - key: ENABLE_DEMO_PROFILES
-        value: "true"
+        value: "false"
+      # Clave de las cuentas de prueba del equipo evaluador: Render la genera y se consulta en
+      # Dashboard → aluna-sabia-ceiba → Environment. Se comparte solo con quien evalúa.
+      - key: DEMO_PASSWORD
+        generateValue: true
+      - key: ENABLE_DOCS
+        value: "false"
       - key: SEED_ON_START
         value: "true"
       - key: ACCESS_TOKEN_EXPIRE_MINUTES

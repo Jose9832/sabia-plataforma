@@ -16,5 +16,6 @@ RUN npm run build
 # ---------- 2. Servir con nginx ----------
 FROM nginx:1.27-alpine
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/nginx-seguridad.conf /etc/nginx/snippets/seguridad.conf
 COPY --from=build /repo/frontend/dist /usr/share/nginx/html
 EXPOSE 80

@@ -26,10 +26,40 @@ app = FastAPI(
         "y aprobación por consenso); **CEIBA** consulta y transforma solo lo autorizado, con citas. "
         "El módulo de **Salud SABIA** (`/api/v1/salud`) funciona sin internet y mantiene sus datos aislados."
     ),
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
+    # En producción la documentación interactiva queda apagada (ENABLE_DOCS=true la vuelve a mostrar).
+    docs_url="/api/docs" if settings.docs_habilitada else None,
+    redoc_url="/api/redoc" if settings.docs_habilitada else None,
+    openapi_url="/api/openapi.json" if settings.docs_habilitada else None,
 )
+
+# Cabeceras de seguridad en todas las respuestas. La CSP solo aplica a las páginas HTML.
+CABECERAS_SEGURIDAD = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), geolocation=(), microphone=(self)",
+    "Cross-Origin-Opener-Policy": "same-origin",
+}
+CSP = (
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob: data:; "
+    "connect-src 'self'; worker-src 'self'; "
+    "frame-src https://www.youtube-nocookie.com https://open.spotify.com https://maps.google.com https://www.google.com; "
+    "manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; "
+    "form-action 'self'; object-src 'none'"
+)
+
+
+@app.middleware("http")
+async def cabeceras_de_seguridad(request: Request, call_next):
+    respuesta = await call_next(request)
+    for nombre, valor in CABECERAS_SEGURIDAD.items():
+        respuesta.headers.setdefault(nombre, valor)
+    if request.url.scheme == "https":
+        respuesta.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    if respuesta.headers.get("content-type", "").startswith("text/html") and not request.url.path.startswith("/api/"):
+        respuesta.headers.setdefault("Content-Security-Policy", CSP)
+    return respuesta
 
 app.add_middleware(
     CORSMiddleware,

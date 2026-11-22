@@ -36,6 +36,8 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
       SEED_ON_START: ${SEED_ON_START:-true}
       ENABLE_DEMO_PROFILES: ${ENABLE_DEMO_PROFILES:-true}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-aluna2026}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
     depends_on:
       db:
         condition: service_healthy

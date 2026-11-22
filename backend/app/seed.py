@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import SessionLocal
-from app.core.security import hash_clave
+from app.core.security import hash_clave, verificar_clave
 from app.models import (
     AccessGrant,
     AccessRequest,
@@ -44,7 +44,6 @@ from app.models import (
 log = logging.getLogger("aluna.seed")
 
 # Contraseña de los perfiles de demostración (documentada en el README).
-CLAVE_DEMO = "aluna2026"
 # Qué versión del módulo de Salud SABIA ve cada comunidad (configurable en la tabla communities).
 MODULO_SALUD = {
     "comm_sierra": Comunidad.indigena,
@@ -94,7 +93,7 @@ def _cargar_usuarios_y_comunidades(db: Session, d: dict) -> None:
             db.add(Usuario(
                 codigo=u["id"], email=u["email"], nombre=u["name"], identity=u["identity"], role_label=u["roleLabel"],
                 avatar=u["avatar"], organization=u.get("organization"), bio=u["bio"], is_demo=True,
-                is_technical_admin=bool(u.get("isTechnicalAdmin")), clave_hash=hash_clave(CLAVE_DEMO),
+                is_technical_admin=bool(u.get("isTechnicalAdmin")), clave_hash=hash_clave(settings.DEMO_PASSWORD),
             ))
     db.flush()
 
@@ -253,12 +252,24 @@ def cargar_salud(db: Session, d: dict) -> dict[str, int]:
     return resumen
 
 
+def sincronizar_clave_demo(db: Session) -> int:
+    """Si DEMO_PASSWORD cambió (p. ej. en producción), actualiza las cuentas demo con la nueva clave."""
+    cambiadas = 0
+    for u in db.scalars(select(Usuario).where(Usuario.is_demo.is_(True))):
+        if not verificar_clave(settings.DEMO_PASSWORD, u.clave_hash):
+            u.clave_hash = hash_clave(settings.DEMO_PASSWORD)
+            cambiadas += 1
+    return cambiadas
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     resumen: dict[str, int] = {}
     with SessionLocal() as db:
         if aluna := _leer("aluna_saberes.json"):
             resumen.update(cargar_aluna(db, aluna))
+        if n := sincronizar_clave_demo(db):
+            resumen["claves_demo_actualizadas"] = n
         if salud := _leer("salud_sabia.json"):
             resumen.update({f"salud.{k}": v for k, v in cargar_salud(db, salud).items()})
         db.commit()

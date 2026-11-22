@@ -2,14 +2,19 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+CLAVES_INSEGURAS = {"", "cambia-esta-clave-en-produccion", "changeme", "secret"}
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     APP_NAME: str = "ALUNA IA · SABIA & CEIBA API"
+    # "production" activa las comprobaciones estrictas (clave secreta obligatoria, sin documentación pública).
+    ENVIRONMENT: str = "development"
     DATABASE_URL: str = "postgresql+psycopg://sabia:sabia_local@localhost:5432/sabia"
     SECRET_KEY: str = "cambia-esta-clave-en-produccion"
     JWT_ALGORITHM: str = "HS256"
@@ -21,6 +26,13 @@ class Settings(BaseSettings):
     SEEDS_DIR: str = ""
     # Selector rápido de perfiles demo (Sofía, Carlos, Aura…). En producción: false.
     ENABLE_DEMO_PROFILES: bool = True
+    # Contraseña de las cuentas de prueba del equipo evaluador. En producción se genera aparte.
+    DEMO_PASSWORD: str = "aluna2026"
+    # Documentación interactiva de la API (/api/docs). Vacío = solo fuera de producción.
+    ENABLE_DOCS: bool | None = None
+    # Intentos de inicio de sesión o registro permitidos por IP en cada ventana de tiempo.
+    RATE_LIMIT_AUTH: int = 10
+    RATE_LIMIT_WINDOW_SECONDS: int = 300
     # Despliegue en un solo servicio (p. ej. Render): carpeta con el frontend compilado.
     # Vacío = la API no sirve páginas (en Docker Compose las sirve nginx).
     FRONTEND_DIR: str = ""
@@ -33,6 +45,21 @@ class Settings(BaseSettings):
             if v.startswith(prefijo):
                 return "postgresql+psycopg://" + v[len(prefijo):]
         return v
+
+    @model_validator(mode="after")
+    def exigir_clave_en_produccion(self) -> "Settings":
+        """En producción no se arranca con la clave de ejemplo: cualquiera podría firmar tokens."""
+        if self.es_produccion and (self.SECRET_KEY in CLAVES_INSEGURAS or len(self.SECRET_KEY) < 32):
+            raise ValueError("SECRET_KEY no es segura para producción: usa una clave aleatoria de al menos 32 caracteres.")
+        return self
+
+    @property
+    def es_produccion(self) -> bool:
+        return self.ENVIRONMENT.strip().lower() in ("production", "produccion", "prod")
+
+    @property
+    def docs_habilitada(self) -> bool:
+        return (not self.es_produccion) if self.ENABLE_DOCS is None else self.ENABLE_DOCS
 
     @property
     def cors_origins(self) -> list[str]:
