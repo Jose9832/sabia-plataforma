@@ -12,7 +12,12 @@ import {
   Info
 } from 'lucide-react';
 
+// Brave se cierra al ofrecer «guardar contraseña» tras enviar el formulario (fallo del navegador).
+// Solo en Brave el campo no es de tipo «password» (se sigue viendo con puntos).
+const esBrave = () => typeof navigator !== 'undefined' && 'brave' in navigator;
+
 export const LoginScreen: React.FC = () => {
+  const ES_BRAVE = esBrave();
   const { 
     users, 
     currentUser, 
@@ -115,7 +120,12 @@ export const LoginScreen: React.FC = () => {
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   id="login-password"
-                  type="password"
+                  type={ES_BRAVE ? 'text' : 'password'}
+                  style={ES_BRAVE ? ({ WebkitTextSecurity: 'disc' } as React.CSSProperties) : undefined}
+                  autoComplete={ES_BRAVE ? 'off' : 'current-password'}
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"

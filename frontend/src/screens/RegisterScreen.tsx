@@ -9,8 +9,17 @@ import {
   Clock
 } from 'lucide-react';
 
+/**
+ * Brave se cierra por completo al enviar este formulario cuando su gestor de contraseñas
+ * intenta ofrecer «guardar contraseña» (fallo del navegador, no de la página). Solo en Brave,
+ * el campo se muestra igual (puntos), pero no es de tipo «password», así que Brave no interviene.
+ * En los demás navegadores se usa el campo de contraseña normal.
+ */
+const esBrave = () => typeof navigator !== 'undefined' && 'brave' in navigator;
+
 export const RegisterScreen: React.FC = () => {
   const { communities, registerAccount, setActiveScreen, showToast } = useAluna();
+  const ES_BRAVE = esBrave();
 
   const [selectedIdentity, setSelectedIdentity] = useState<ParticipationIdentity>('community_member');
   const [name, setName] = useState('');
@@ -206,10 +215,16 @@ export const RegisterScreen: React.FC = () => {
             <div className="space-y-1.5">
               <label className="font-bold text-[#06233B] dark:text-slate-200">Contraseña (mínimo 8 caracteres):</label>
               <input
-                type="password"
+                type={ES_BRAVE ? 'text' : 'password'}
+                style={ES_BRAVE ? ({ WebkitTextSecurity: 'disc' } as React.CSSProperties) : undefined}
+                name={ES_BRAVE ? 'clave-registro-aluna' : 'new-password'}
                 required
                 minLength={8}
-                autoComplete="new-password"
+                autoComplete={ES_BRAVE ? 'off' : 'new-password'}
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                data-lpignore="true"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
