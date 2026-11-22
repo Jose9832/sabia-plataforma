@@ -9,7 +9,7 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 COPY database/seeds/ /repo/database/seeds/
-ENV VITE_API_BASE_URL=/api/v1 VITE_ENABLE_DEMO_PROFILES=true
+ENV VITE_API_BASE_URL=/api/v1 VITE_ENABLE_DEMO_PROFILES=false
 RUN npm run build
 
 # ---------- 2. API + base de datos (migraciones y semillas) ----------

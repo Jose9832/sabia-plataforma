@@ -113,7 +113,7 @@ export const Footer: React.FC = () => {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F5B82E] hover:bg-[#E0A61F] text-[#06233B] font-bold text-xs transition-colors shadow-sm"
             >
               <LogIn className="w-3.5 h-3.5" />
-              <span>Iniciar Sesión / Cambiar Perfil</span>
+              <span>Iniciar sesión o crear cuenta</span>
             </button>
           </div>
 

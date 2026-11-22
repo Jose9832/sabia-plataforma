@@ -145,7 +145,7 @@ export const WellnessScreen: React.FC = () => {
         <section aria-label="Módulo de Salud SABIA" className="space-y-3">
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
             {comunidad
-              ? <>Entraste como integrante verificado: verás la versión de salud de tu comunidad (<strong className="text-[#06233B] dark:text-white">{comunidad === 'indigena' ? 'indígena' : comunidad === 'afro' ? 'afrodescendiente' : 'campesina y territorial'}</strong>), con lectura en voz alta, dictado y la guía <strong>Kora</strong>.</>
+              ? <>Entraste como integrante verificado: verás la versión de salud de tu comunidad (<strong className="text-[#06233B] dark:text-white">{comunidad === 'indigena' ? 'indígena' : comunidad === 'afro' ? 'afrodescendiente' : 'campesina y territorial'}</strong>), con lectura en voz alta, dictado y la guía <strong>Ceiba</strong>.</>
               : <>Tu perfil no tiene una comunidad verificada: puedes explorar la puerta <strong>Conocer</strong>. Para ver la salud de tu comunidad, solicita tu vinculación y espera la validación de su custodia.</>}
           </p>
           <Suspense fallback={<div className="p-10 rounded-3xl bg-white dark:bg-[#0D212E] border border-slate-200 dark:border-[#1E3E54] text-xs text-slate-500">Cargando el módulo de salud…</div>}>

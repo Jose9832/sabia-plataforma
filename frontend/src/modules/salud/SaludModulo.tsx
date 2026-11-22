@@ -46,7 +46,7 @@ export function SaludModulo({ sesion }: { sesion: Sesion | null }) {
   const hayFrase = useApp(s => !!(s.ui.parteSel || s.ui.sintomaSel));
 
   const conVentana = nav.pantalla !== "puertas" && nav.pantalla !== "acceso";
-  /* La barra «Frase para el médico» está visible: Kora sube para no taparla */
+  /* La barra «Frase para el médico» está visible: el botón de Ceiba sube para no taparla */
   const vistaDecir = nav.pantalla === "salud" && (comunidad === "indigena" || (comunidad === "campesina" && nav.sub === "decir"));
   const conFrase = vistaDecir && hayFrase;
 

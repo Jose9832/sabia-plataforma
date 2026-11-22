@@ -104,6 +104,8 @@ interface AlunaContextType {
   loginWithEmail: (email: string, password?: string) => Promise<boolean>;
   registerAccount: (data: RegistroDatos) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
+  /** Entrar sin cuenta: solo lo público, sin solicitudes ni aportes. */
+  enterAsVisitor: () => void;
   resetDemoData: () => void;
   setActiveScreen: (screen: ActiveScreen) => void;
   setSelectedCommunityId: (id: string | null) => void;
@@ -375,7 +377,22 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await refreshFromServer();
       return { ok: true };
     } catch (e) {
-      return { ok: false, error: e instanceof SinConexionError ? 'Sin conexión: para crear tu cuenta necesitas internet.' : (e as Error).message };
+      // Si un intento anterior sí creó la cuenta (p. ej. el servidor tardó en responder),
+      // se entra con esas mismas credenciales en lugar de mostrar «ya existe».
+      if (e instanceof ApiError && e.status === 409) {
+        try {
+          const s = await api<SesionApi>('POST', '/auth/login', { email: data.email, password: data.password });
+          guardarSesion(s);
+          await refreshFromServer();
+          return { ok: true };
+        } catch { /* la cuenta es de otra persona o la contraseña no coincide */ }
+      }
+      return {
+        ok: false,
+        error: e instanceof SinConexionError
+          ? 'No pudimos comunicarnos con el servidor. Revisa tu conexión e inténtalo de nuevo.'
+          : (e as Error).message
+      };
     }
   };
 
@@ -387,6 +404,15 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setActiveScreenState('welcome');
     void refreshFromServer();
     showToast('Sesión cerrada.', 'info');
+  };
+
+  const enterAsVisitor = () => {
+    token.guardar(null);
+    setAuthToken(null);
+    setCurrentUserId('anon');
+    setActiveScreen('library');
+    void refreshFromServer();
+    showToast('Entraste como visitante: verás los saberes que las comunidades compartieron en público.', 'info');
   };
 
   const resetDemoData = () => {
@@ -855,6 +881,7 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loginWithEmail,
         registerAccount,
         logout,
+        enterAsVisitor,
         resetDemoData,
         setActiveScreen,
         setSelectedCommunityId,

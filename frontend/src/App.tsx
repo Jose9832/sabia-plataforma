@@ -3,6 +3,7 @@ import { AlunaProvider, useAluna } from './context/AlunaContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { NotificationToast } from './components/common/NotificationToast';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { KnowledgeDetailModal } from './components/common/KnowledgeDetailModal';
 import { RequestAccessModal } from './components/common/RequestAccessModal';
 import { KnowledgeItem } from './types';
@@ -55,6 +56,7 @@ const MainLayout: React.FC = () => {
 
       {/* 2. Main Screen View Switcher */}
       <main className="flex-1">
+        <ErrorBoundary key={activeScreen} onReset={() => setActiveScreen('welcome')}>
         {activeScreen === 'welcome' && <WelcomeScreen />}
         {activeScreen === 'login' && <LoginScreen />}
         {activeScreen === 'register' && <RegisterScreen />}
@@ -84,6 +86,7 @@ const MainLayout: React.FC = () => {
         {activeScreen === 'profile' && <ProfileScreen />}
         {activeScreen === 'my_community' && <MyCommunityScreen />}
         {activeScreen === 'wellness' && <WellnessScreen />}
+        </ErrorBoundary>
       </main>
 
       {/* 3. Global Institutional Footer */}

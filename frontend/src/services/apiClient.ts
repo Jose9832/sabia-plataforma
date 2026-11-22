@@ -11,7 +11,9 @@
 const BASE = ((import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_BASE_URL || '/api/v1').replace(/\/$/, '');
 const CLAVE_TOKEN = 'aluna_token_v1';
 const CLAVE_COLA = 'aluna_outbox_v1';
-const TIEMPO_MAXIMO = 12000;
+// El plan gratuito del servidor "duerme" tras 15 min sin visitas y tarda hasta ~50 s en despertar:
+// esperamos lo suficiente para no cortar una petición que el servidor sí va a completar.
+const TIEMPO_MAXIMO = 75000;
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

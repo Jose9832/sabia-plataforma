@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAluna } from '../context/AlunaContext';
+import { DEMO_USERS } from '../data/mockData';
 import { 
   LogIn, 
   ShieldCheck, 
@@ -18,7 +19,8 @@ export const LoginScreen: React.FC = () => {
     switchUser, 
     loginWithEmail, 
     setActiveScreen, 
-    demoModeEnabled 
+    demoModeEnabled,
+    enterAsVisitor
   } = useAluna();
 
   const [email, setEmail] = useState('');
@@ -26,6 +28,14 @@ export const LoginScreen: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [enviando, setEnviando] = useState(false);
+  const [lento, setLento] = useState(false);
+
+  // El servidor gratuito puede tardar en despertar: se avisa en vez de dejar la pantalla quieta
+  useEffect(() => {
+    if (!enviando) { setLento(false); return; }
+    const t = setTimeout(() => setLento(true), 4000);
+    return () => clearTimeout(t);
+  }, [enviando]);
 
   // POST /api/v1/auth/login · la contraseña se verifica con bcrypt en el servidor
   const handleFormalLogin = async (e: React.FormEvent) => {
@@ -39,7 +49,7 @@ export const LoginScreen: React.FC = () => {
     const ok = await loginWithEmail(email, password);
     setEnviando(false);
     if (!ok) {
-      setErrorMsg('El correo o la contraseña no coinciden. Verifica tus datos o selecciona un perfil de demostración.');
+      setErrorMsg('No pudimos iniciar sesión. Verifica tu correo y contraseña, o crea una cuenta nueva.');
       return;
     }
     setActiveScreen('dashboard');
@@ -91,7 +101,7 @@ export const LoginScreen: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="aura.villafana@sierra-nevada.org"
+                  placeholder="tu.correo@ejemplo.com"
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-[#1E3E54] bg-slate-50 dark:bg-[#0A1924] text-[#06233B] dark:text-white outline-none focus:ring-2 focus:ring-[#004B87] placeholder:text-slate-400"
                 />
               </div>
@@ -128,6 +138,11 @@ export const LoginScreen: React.FC = () => {
               <LogIn className="w-4 h-4" />
               <span>{enviando ? 'Verificando credenciales…' : 'Ingresar con correo'}</span>
             </button>
+            {lento && (
+              <p role="status" className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                El servidor se está activando (puede tardar hasta un minuto la primera vez). No cierres la página.
+              </p>
+            )}
             {demoModeEnabled && (
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                 Cuentas demo: usa el correo de cualquier perfil de la derecha con la contraseña <code className="font-mono font-bold text-[#004B87] dark:text-aluna-cyan">aluna2026</code>.
@@ -135,17 +150,46 @@ export const LoginScreen: React.FC = () => {
             )}
           </form>
 
-          <div className="pt-4 border-t border-slate-200 dark:border-[#1E3E54] flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-slate-400">¿Aún no participas en ALUNA?</span>
+          {/* ¿Primera vez? Crear cuenta o entrar como visitante (sin perfil) */}
+          <div className="pt-4 border-t border-slate-200 dark:border-[#1E3E54] space-y-3 text-xs">
+            <p className="font-bold text-[#06233B] dark:text-white">¿Es tu primera vez en ALUNA?</p>
             <button
               type="button"
               onClick={() => setActiveScreen('register')}
-              className="text-[#004B87] dark:text-aluna-cyan font-bold hover:underline inline-flex items-center gap-1"
+              className="w-full py-3 px-5 rounded-full border-2 border-[#004B87] dark:border-aluna-cyan text-[#004B87] dark:text-aluna-cyan font-bold hover:bg-sky-50 dark:hover:bg-[#132C3E] transition-colors inline-flex items-center justify-center gap-2"
             >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>Solicitar registro</span>
+              <UserPlus className="w-4 h-4" />
+              <span>Crear una cuenta</span>
             </button>
+            <button
+              type="button"
+              onClick={enterAsVisitor}
+              className="w-full py-3 px-5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#132C3E] dark:hover:bg-[#193A50] text-[#06233B] dark:text-white font-bold transition-colors inline-flex items-center justify-center gap-2"
+            >
+              <ArrowRight className="w-4 h-4" />
+              <span>Continuar como visitante (sin cuenta)</span>
+            </button>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              Como visitante puedes consultar los saberes que las comunidades compartieron en público. Para solicitar accesos, aportar o usar Ceiba necesitas una cuenta.
+            </p>
           </div>
+
+          {/* Cuentas de prueba del equipo evaluador: plegadas, no se muestran todos los perfiles de una vez */}
+          {!demoModeEnabled && (
+            <details className="pt-3 border-t border-slate-200 dark:border-[#1E3E54] text-[11px] text-slate-600 dark:text-slate-300">
+              <summary className="cursor-pointer font-bold text-[#004B87] dark:text-aluna-cyan">¿Eres del equipo evaluador? Ver cuentas de prueba</summary>
+              <p className="mt-2 leading-relaxed">Toca un correo para usarlo. Contraseña de todas: <code className="font-mono font-bold">aluna2026</code></p>
+              <ul className="mt-2 space-y-1">
+                {DEMO_USERS.map(u => (
+                  <li key={u.id}>
+                    <button type="button" onClick={() => setEmail(u.email)} className="text-left hover:underline">
+                      <strong className="text-[#06233B] dark:text-white">{u.roleLabel}</strong> · {u.email}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
 
         {/* Right Column (7 cols): Demo Mode Quick Profile Selector (Separado de producción) */}

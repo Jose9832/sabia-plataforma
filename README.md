@@ -4,7 +4,7 @@
 
 - **SABIA** guarda y gobierna los saberes de cada comunidad: lectura *pública, comunitaria, restringida o privada*, custodia territorial por comunidad y publicación por **consenso** cuando un saber pertenece a varias comunidades.
 - **CEIBA** consulta y transforma con IA **solo lo autorizado**, siempre con citas, sin inventar y sin hablar en nombre de ninguna comunidad.
-- **Salud SABIA** (módulo de Bienestar) acompaña a comunidades indígenas, afrodescendientes y campesinas: primeros auxilios, plantas, partería, rutas de derechos, alertas veredales, cuaderno de cuentas, lectura en voz alta, dictado y la guía **Kora**. Funciona **sin internet** y sus datos están **aislados** del repositorio cultural y de Ceiba.
+- **Salud SABIA** (módulo de Bienestar) acompaña a comunidades indígenas, afrodescendientes y campesinas: primeros auxilios, plantas, partería, rutas de derechos, alertas veredales, cuaderno de cuentas, lectura en voz alta, dictado y la guía de chat **Ceiba**. Funciona **sin internet** y sus datos están **aislados** del repositorio cultural y de Ceiba.
 
 ---
 
@@ -93,7 +93,7 @@ Variables opcionales: copia `.env.example` a `.env` en la raíz (contraseña de 
 
 ## Perfiles de demostración
 
-Se cambian desde el menú de usuario (arriba a la derecha) o se inicia sesión con correo y la contraseña **`aluna2026`**.
+Las personas nuevas **crean su cuenta** o **entran como visitantes** (solo ven lo público). Para el equipo evaluador, las cuentas de prueba están plegadas en *Iniciar sesión → ¿Eres del equipo evaluador?*: se entra con el correo y la contraseña **`aluna2026`**. El selector rápido de perfiles del menú se puede volver a activar con `VITE_ENABLE_DEMO_PROFILES=true` al compilar el frontend.
 
 | Perfil | Correo | Qué demuestra | Salud SABIA |
 |---|---|---|---|

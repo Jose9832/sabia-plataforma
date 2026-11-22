@@ -101,7 +101,7 @@ export const WelcomeScreen: React.FC = () => {
               className="flex items-center gap-2 px-6 py-3.5 rounded-full font-bold text-sm bg-[#004B87] hover:bg-[#005A9C] text-white border border-sky-400/30 shadow-md transition-colors"
             >
               <LogIn className="w-4 h-4 text-[#F5B82E]" />
-              <span>Iniciar Sesión / Perfiles</span>
+              <span>Iniciar sesión o crear cuenta</span>
             </button>
 
             {/* 3. Ir al panel */}

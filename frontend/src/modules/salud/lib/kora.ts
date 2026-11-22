@@ -68,7 +68,7 @@ const adentroCon = (ctx: CtxKora) => ctx.ventana === "adentro" && !!ctx.sesion;
 /* ---------- Base de conocimiento (intenciones) ---------- */
 const intenciones: Intencion[] = [
   { claves: ["hola", "buenas", "buenos dias", "buenas tardes", "quien eres", "como te llamas"],
-    responder: ctx => ({ texto: `¡Hola${nombre(ctx)}! Soy Kora, tu guía en SABIA. Pregúntame lo que necesites o toca una de las preguntas de abajo.` }) },
+    responder: ctx => ({ texto: `¡Hola${nombre(ctx)}! Soy Ceiba, tu guía de salud en SABIA. Pregúntame lo que necesites o toca una de las preguntas de abajo.` }) },
   { claves: ["que es sabia", "para que sirve", "que hace esta app", "que es esto", "sabia"],
     responder: () => ({ texto: "SABIA es una herramienta para que las comunidades indígenas, afrodescendientes y campesinas guarden y compartan sus saberes, cuiden su salud y conozcan sus derechos. Funciona sin internet y cada comunidad decide qué se comparte afuera." }) },
   { claves: ["puerta", "que elijo", "diferencia", "mi comunidad", "entrar"], contextos: ["inicio", "afuera"],

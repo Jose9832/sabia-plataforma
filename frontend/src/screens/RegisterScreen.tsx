@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAluna } from '../context/AlunaContext';
 import { ParticipationIdentity } from '../types';
 import { 
@@ -22,6 +22,14 @@ export const RegisterScreen: React.FC = () => {
   const [enviando, setEnviando] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [lento, setLento] = useState(false);
+
+  // El servidor gratuito puede tardar en despertar: se avisa para que nadie cierre la página
+  useEffect(() => {
+    if (!enviando) { setLento(false); return; }
+    const t = setTimeout(() => setLento(true), 4000);
+    return () => clearTimeout(t);
+  }, [enviando]);
 
   const roleOptions: {
     identity: ParticipationIdentity;
@@ -122,7 +130,7 @@ export const RegisterScreen: React.FC = () => {
             Solicitud de Vinculación Enviada
           </h3>
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            Tu petición para vincularte a <strong className="text-[#06233B] dark:text-white">{communities.find(c => c.id === selectedCommunityId)?.name}</strong> quedó registrada. En la demostración, puedes cambiar al custodio correspondiente en la barra superior para autorizarla.
+            Tu petición para vincularte a <strong className="text-[#06233B] dark:text-white">{communities.find(c => c.id === selectedCommunityId)?.name}</strong> quedó registrada y ya tienes tu cuenta activa. La custodia de esa comunidad revisará tu vinculación; mientras tanto puedes consultar los saberes públicos.
           </p>
           <button
             onClick={() => setActiveScreen('dashboard')}
@@ -265,6 +273,11 @@ export const RegisterScreen: React.FC = () => {
               {enviando ? 'Creando cuenta…' : 'Completar Registro'}
             </button>
           </div>
+          {lento && (
+            <p role="status" className="text-[11px] text-right text-amber-800 dark:text-amber-300">
+              El servidor se está activando (puede tardar hasta un minuto la primera vez). No cierres la página.
+            </p>
+          )}
 
         </form>
       )}

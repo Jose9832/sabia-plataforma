@@ -35,7 +35,7 @@ export function Kora() {
   function abrirKora() {
     const cambios: Partial<typeof kora> = { abierto: true };
     if (!kora.saludado) {
-      cambios.mensajes = [...kora.mensajes, { de: "kora", texto: `Hola${sesion ? ", " + sesion.usuario.nombre.split(" ")[0] : ""}. Soy Kora, tu guía en SABIA. Toca una pregunta, escríbela o dímela con el micrófono.` }];
+      cambios.mensajes = [...kora.mensajes, { de: "kora", texto: `Hola${sesion ? ", " + sesion.usuario.nombre.split(" ")[0] : ""}. Soy Ceiba, tu guía de salud en SABIA. Toca una pregunta, escríbela o dímela con el micrófono.` }];
       cambios.saludado = true;
     }
     setKora(cambios);
@@ -81,15 +81,15 @@ export function Kora() {
 
   return (
     <div id="kora">
-      <button className={`kora-fab${kora.abierto ? " oculto" : ""}`} onClick={abrirKora} aria-label="Abrir a Kora, tu guía">
-        <span className="kora-fab-ico"><Icono nombre="kora" /></span><span>Kora</span>
+      <button className={`kora-fab${kora.abierto ? " oculto" : ""}`} onClick={abrirKora} aria-label="Abrir a Ceiba, tu guía de salud">
+        <span className="kora-fab-ico"><Icono nombre="kora" /></span><span>Ceiba</span>
       </button>
       <div className={`kora-fondo${kora.abierto ? " visible" : ""}`} onClick={cerrarKora}></div>
-      <section className={`kora-panel${kora.abierto ? " visible" : ""}`} role="dialog" aria-label="Kora, guía de SABIA" aria-hidden={!kora.abierto}>
+      <section className={`kora-panel${kora.abierto ? " visible" : ""}`} role="dialog" aria-label="Ceiba, guía de salud de SABIA" aria-hidden={!kora.abierto}>
         <div className="kora-agarre"></div>
         <header className="kora-cabecera">
           <span className="kora-avatar"><Icono nombre="kora" /></span>
-          <div><b>Kora</b><small>Tu guía en SABIA · {etiquetasContexto[ctx]} · sin internet</small></div>
+          <div><b>Ceiba</b><small>Tu guía de salud en SABIA · {etiquetasContexto[ctx]} · sin internet</small></div>
           <button className="kora-cerrar" onClick={cerrarKora} aria-label="Cerrar"><Icono nombre="cerrar" /></button>
         </header>
         <div className="kora-mensajes" id="koraMensajes" ref={lista}>
