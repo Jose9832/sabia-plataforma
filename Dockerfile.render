@@ -1,0 +1,29 @@
+# Imagen de despliegue en UN solo servicio (Render u otro PaaS):
+# compila frontend/ y lo sirve desde la API de backend/, con las migraciones de database/.
+# El desarrollo local sigue usando docker-compose.yml (tres contenedores separados).
+
+# ---------- 1. Compilar la PWA ----------
+FROM node:24-alpine AS frontend
+WORKDIR /repo/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend/ ./
+COPY database/seeds/ /repo/database/seeds/
+ENV VITE_API_BASE_URL=/api/v1 VITE_ENABLE_DEMO_PROFILES=true
+RUN npm run build
+
+# ---------- 2. API + base de datos (migraciones y semillas) ----------
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+WORKDIR /app
+COPY backend/requirements.txt .
+RUN pip install -r requirements.txt
+COPY backend/ .
+COPY database/ /database/
+COPY --from=frontend /repo/frontend/dist /app/static
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh \
+    && adduser --disabled-password --gecos "" sabia && chown -R sabia /app /database
+USER sabia
+ENV SEEDS_DIR=/database/seeds FRONTEND_DIR=/app/static PORT=10000
+EXPOSE 10000
+ENTRYPOINT ["./entrypoint.sh"]

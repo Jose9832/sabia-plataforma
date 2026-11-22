@@ -4,6 +4,8 @@
 - /api/v1/salud/...  Módulo de Salud SABIA (offline-first): datos aislados del repositorio
                      cultural y de Ceiba (minimización de datos sensibles, Ley 1581 de 2012).
 """
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,3 +66,33 @@ def salud_del_servicio():
     with SessionLocal() as db:
         db.execute(text("SELECT 1"))
     return {"estado": "ok", "servicio": "aluna-api"}
+
+
+# ---------------------------------------------------------------------------
+# Despliegue en un solo servicio (Render): la API también sirve la PWA compilada.
+# En Docker Compose esto queda apagado y las páginas las sirve nginx.
+# ---------------------------------------------------------------------------
+if settings.FRONTEND_DIR and Path(settings.FRONTEND_DIR).is_dir():
+    from fastapi import HTTPException
+    from fastapi.staticfiles import StaticFiles
+    from starlette.exceptions import HTTPException as StarletteHTTPException
+
+    class PaginaUnica(StaticFiles):
+        """Sirve los archivos del frontend; cualquier otra ruta devuelve index.html (SPA)."""
+
+        async def get_response(self, path: str, scope):
+            if path.startswith("api/"):
+                raise HTTPException(status_code=404, detail="Recurso de la API no encontrado.")
+            try:
+                respuesta = await super().get_response(path, scope)
+            except StarletteHTTPException as e:
+                if e.status_code != 404:
+                    raise
+                respuesta = await super().get_response("index.html", scope)
+            if path in ("sw.js", "registerSW.js", "manifest.webmanifest", "index.html", ""):
+                respuesta.headers["Cache-Control"] = "no-cache"
+            elif path.startswith("assets/"):
+                respuesta.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            return respuesta
+
+    app.mount("/", PaginaUnica(directory=settings.FRONTEND_DIR, html=True), name="frontend")

@@ -206,6 +206,17 @@ Las pruebas del backend usan los mismos datos demo que las del frontend, para ga
 
 ---
 
+## Publicar en internet (Render)
+
+El repositorio trae un **Blueprint** (`render.yaml`) que crea la base de datos y la aplicación con un clic. `Dockerfile.render` compila el frontend y lo sirve desde la misma API, así que todo queda en **un solo enlace**.
+
+1. Entra a [render.com](https://render.com) con tu cuenta de GitHub.
+2. **New → Blueprint** → elige el repositorio `sabia-plataforma` (si no aparece, da acceso al repositorio en *Configure GitHub App*).
+3. Revisa que aparezcan `aluna-db` (Postgres) y `aluna-sabia-ceiba` (web) y pulsa **Apply**.
+4. Cuando termine (5–10 min la primera vez), abre el enlace `https://aluna-sabia-ceiba….onrender.com` y compártelo.
+
+Cada `git push` a `main` vuelve a publicar la app. En el plan gratis la app se duerme tras 15 min sin visitas (la primera carga tarda ~1 min) y la base gratuita vence a los 30 días.
+
 ## Producción
 
 - Define `SECRET_KEY`, `POSTGRES_PASSWORD` y `CORS_ORIGINS` reales y pon `ENABLE_DEMO_PROFILES=false` (oculta el selector de perfiles y desactiva `/auth/demo` y `/demo/reset`).

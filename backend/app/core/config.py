@@ -2,6 +2,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,6 +21,18 @@ class Settings(BaseSettings):
     SEEDS_DIR: str = ""
     # Selector rápido de perfiles demo (Sofía, Carlos, Aura…). En producción: false.
     ENABLE_DEMO_PROFILES: bool = True
+    # Despliegue en un solo servicio (p. ej. Render): carpeta con el frontend compilado.
+    # Vacío = la API no sirve páginas (en Docker Compose las sirve nginx).
+    FRONTEND_DIR: str = ""
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def usar_psycopg3(cls, v: str) -> str:
+        """Render y Heroku entregan `postgres://…`; SQLAlchemy necesita el driver psycopg 3."""
+        for prefijo in ("postgres://", "postgresql://"):
+            if v.startswith(prefijo):
+                return "postgresql+psycopg://" + v[len(prefijo):]
+        return v
 
     @property
     def cors_origins(self) -> list[str]:
