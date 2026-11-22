@@ -126,7 +126,7 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-3">
           
-          {/* Left: Official Institutional Lockup (UNIMAGDALENA Seal + Divider + Aluna I.A. SABIA) */}
+          {/* Izquierda: sello UNIMAGDALENA + divisor + logotipo de ceiba y nombre SABIA */}
           <div 
             onClick={() => setActiveScreen('welcome')}
             className="flex items-center gap-3 cursor-pointer group shrink-0"
@@ -138,22 +138,18 @@ export const Navbar: React.FC = () => {
             />
             <div className="h-7 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg bg-white border border-slate-200/80 dark:border-slate-700 p-1 flex items-center justify-center shrink-0 shadow-sm">
-                <img 
-                  src="/assets/logos/aluna_isotipo.png" 
-                  alt="Aluna I.A." 
+              {/* Logotipo: árbol de ceiba (frontend/public/logo-ceiba.svg) */}
+              <div className="w-9 h-9 rounded-lg bg-white border border-slate-200/80 dark:border-slate-700 p-0.5 flex items-center justify-center shrink-0 shadow-sm">
+                <img
+                  src="/logo-ceiba.svg"
+                  alt="SABIA"
                   className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-serif font-bold text-lg leading-none tracking-tight text-[#005A8D] dark:text-white whitespace-nowrap">
-                    Aluna I.A.
-                  </span>
-                  <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-50 dark:bg-aluna-cyan/15 text-[#004B87] dark:text-aluna-cyan-300 border border-sky-200 dark:border-aluna-cyan/30 whitespace-nowrap">
-                    SABIA
-                  </span>
-                </div>
+                <span className="font-serif font-bold text-lg leading-none tracking-wide text-[#005A8D] dark:text-white whitespace-nowrap">
+                  SABIA
+                </span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#06233B]/70 dark:text-slate-400 whitespace-nowrap mt-0.5">
                   UNIMAGDALENA
                 </span>

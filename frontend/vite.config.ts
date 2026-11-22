@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons.svg', 'icono.svg'],
+      includeAssets: ['favicon.svg', 'icons.svg', 'icono.svg', 'logo-ceiba.svg'],
       manifest: {
         name: 'ALUNA IA · SABIA & CEIBA',
         short_name: 'ALUNA',
