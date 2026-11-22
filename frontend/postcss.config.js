@@ -7,7 +7,8 @@ import tailwindcss from 'tailwindcss';
 // encierran bajo `.sabia-modulo`: `:root` y `body` pasan a ser el contenedor del módulo.
 const aislarModuloSalud = prefixSelector({
   prefix: '.sabia-modulo',
-  includeFiles: [/modules[\/]salud[\/]styles/],
+  // Separador / (Linux, Docker) o \ (Windows)
+  includeFiles: [/modules[/\\]salud[/\\]styles/],
   transform(prefix, selector, prefixed) {
     if (selector === ':root' || selector === 'body' || selector === 'html') return prefix;
     if (selector.startsWith('body ')) return `${prefix} ${selector.slice(5)}`;

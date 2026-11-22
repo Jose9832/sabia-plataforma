@@ -31,7 +31,6 @@ export const AILabScreen: React.FC = () => {
     canUserProcessWithAI,
     selectedKnowledgeIdForLab,
     setSelectedKnowledgeIdForLab,
-    createAIArtifact,
     askCeiba,
     transformWithCeiba,
     grantAIPermissionToKnowledge,

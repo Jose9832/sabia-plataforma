@@ -44,7 +44,7 @@ import {
 } from '../domain/authorization';
 import { isDemoProfilesEnabled } from '../services/authService';
 import { ceibaService } from '../services/aiService';
-import { api, ApiError, cola, nuevoId, SinConexionError, token } from '../services/apiClient';
+import { api, ApiError, cola, nuevoId, SinConexionError, token, usuarioDelToken } from '../services/apiClient';
 
 interface ToastInfo {
   message: string;
@@ -369,9 +369,6 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [refreshFromServer, showToast]);
 
-  // El contador muestra solo las acciones de quien tiene la sesión abierta.
-  useEffect(() => { setPendingSyncCount(cola.de().length); }, [authToken]);
-
   // Mientras haya acciones sin enviar, la copia local guarda también los cambios hechos sin señal:
   // si la persona recarga la página sin conexión, los sigue viendo hasta que se sincronicen.
   useEffect(() => {
@@ -383,17 +380,21 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Cola del módulo de salud: se envía al abrir, al volver la señal y cada 30 s.
   const sesionSalud = useRef<{ t: string | null; id: string }>({ t: null, id: 'anon' });
-  sesionSalud.current = { t: authToken, id: currentUserId };
   const enviarSalud = useCallback(async () => {
     const { t, id } = sesionSalud.current;
     const n = await enviarColaSalud(t, id);
     if (n) showToast(`Salud SABIA: se enviaron ${n} registro(s) guardado(s) sin señal.`, 'success');
   }, [showToast]);
-  useEffect(() => { void enviarSalud(); }, [authToken, currentUserId, enviarSalud]);
+  useEffect(() => {
+    sesionSalud.current = { t: authToken, id: currentUserId };
+    void enviarSalud();
+  }, [authToken, currentUserId, enviarSalud]);
 
   const guardarSesion = useCallback((s: SesionApi) => {
     token.guardar(s.access_token);
     setAuthToken(s.access_token);
+    // El contador muestra solo las acciones de quien tiene la sesión abierta.
+    setPendingSyncCount(cola.de(usuarioDelToken(s.access_token)).length);
   }, []);
 
   /**
@@ -517,6 +518,7 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const logout = () => {
     token.guardar(null);
     setAuthToken(null);
+    setPendingSyncCount(0);
     try { localStorage.removeItem(`${STORAGE_KEY}_bootstrap`); } catch { /* bloqueado */ }
     setCurrentUserId('anon');
     setActiveScreenState('welcome');
@@ -527,6 +529,7 @@ export const AlunaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const enterAsVisitor = () => {
     token.guardar(null);
     setAuthToken(null);
+    setPendingSyncCount(0);
     setCurrentUserId('anon');
     setActiveScreen('library');
     void refreshFromServer();

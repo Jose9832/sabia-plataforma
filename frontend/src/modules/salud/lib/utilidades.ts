@@ -1,11 +1,24 @@
 /* Utilidades del prototipo: dictado por voz, montos, fase lunar y enlaces de podcast. */
 
 /* ---------- Dictado (SpeechRecognition) ---------- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Reconocedor = any;
+/** Lo que usa la app de la Web Speech API (no todos los navegadores traen sus tipos). */
+export interface ResultadoVoz { results: { 0: { 0: { transcript: string } } } }
+export interface Reconocedor {
+  lang: string;
+  interimResults: boolean;
+  onresult: ((e: ResultadoVoz) => void) | null;
+  onerror: ((e: unknown) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+type VentanaConVoz = Window & {
+  SpeechRecognition?: new () => Reconocedor;
+  webkitSpeechRecognition?: new () => Reconocedor;
+};
+const ventana = window as VentanaConVoz;
 export const Reconocer: (new () => Reconocedor) | undefined =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  ventana.SpeechRecognition || ventana.webkitSpeechRecognition;
 
 export function crearReconocedor(): Reconocedor | null {
   if (!Reconocer) return null;

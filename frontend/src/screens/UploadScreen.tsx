@@ -525,7 +525,7 @@ export const UploadScreen: React.FC = () => {
                 ].map(opt => (
                   <div
                     key={opt.id}
-                    onClick={() => setConsultation(opt.id as any)}
+                    onClick={() => setConsultation(opt.id as typeof consultation)}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-colors flex items-start gap-3 ${
                       consultation === opt.id
                         ? 'bg-sky-50 dark:bg-[#132C3E] border-[#004B87] dark:border-aluna-cyan text-[#06233B] dark:text-white shadow-sm'
@@ -570,7 +570,7 @@ export const UploadScreen: React.FC = () => {
                 ].map(opt => (
                   <div
                     key={opt.id}
-                    onClick={() => setAiQueryAllowed(opt.id as any)}
+                    onClick={() => setAiQueryAllowed(opt.id as typeof aiQueryAllowed)}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-colors flex flex-col justify-between gap-2 ${
                       aiQueryAllowed === opt.id
                         ? 'bg-sky-50 dark:bg-[#132C3E] border-[#004B87] dark:border-aluna-cyan text-[#06233B] dark:text-white shadow-sm'

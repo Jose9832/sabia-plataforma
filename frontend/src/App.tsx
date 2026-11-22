@@ -8,7 +8,7 @@ import { KnowledgeDetailModal } from './components/common/KnowledgeDetailModal';
 import { RequestAccessModal } from './components/common/RequestAccessModal';
 import { KnowledgeItem } from './types';
 
-// Screens (VisualGuideScreen and invasive DemoModeBar removed per P1.2 & P1.3)
+// Pantallas
 import { WelcomeScreen } from './screens/WelcomeScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { RegisterScreen } from './screens/RegisterScreen';

@@ -78,7 +78,7 @@ export const Navbar: React.FC = () => {
     { id: 'ai_lab', label: 'Ceiba IA', icon: <Bot className="w-3.5 h-3.5" /> },
   ];
 
-  // Secondary / Governance modules grouped in the user & management dropdown (VisualGuideScreen removed)
+  // Secondary / Governance modules grouped in the user & management dropdown
   const secondaryLinks: { id: ActiveScreen; label: string; desc: string; icon: React.ReactNode; badge?: number }[] = [
     { 
       id: 'custodian', 
@@ -231,7 +231,7 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* User & Quick Profile Switcher Dropdown (Replaces invasive DemoModeBar) */}
+            {/* User & Quick Profile Switcher Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
