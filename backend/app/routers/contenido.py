@@ -17,7 +17,7 @@ from app.schemas.contenido import (
 )
 from app.services import contenido_service as svc
 
-router = APIRouter(tags=["Contenido"])
+router = APIRouter(tags=["Salud SABIA · Contenido"])
 VentanaQ = Query("afuera", description="adentro = Mi comunidad (requiere sesión) · afuera = Conocer")
 
 

@@ -36,7 +36,7 @@ class Inscripcion(Sincronizable, Base):
     __table_args__ = (UniqueConstraint("usuario_id", "encuentro_id", name="uq_inscripcion_usuario_encuentro"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     encuentro_id: Mapped[int] = mapped_column(ForeignKey("encuentros.id", ondelete="CASCADE"))
 
 
@@ -47,7 +47,7 @@ class SolicitudInvestigacion(Sincronizable, Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     investigacion_id: Mapped[int] = mapped_column(ForeignKey("investigaciones.id", ondelete="CASCADE"))
     acepta_derechos: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -57,7 +57,7 @@ class SemillaTrueque(Sincronizable, Base):
     __tablename__ = "semillas_trueque"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     tipo: Mapped[str] = mapped_column(String(30))
     variedad: Mapped[str] = mapped_column(String(200))
     cantidad: Mapped[str] = mapped_column(String(100))
@@ -72,7 +72,7 @@ class SolicitudTrueque(Sincronizable, Base):
     __table_args__ = (UniqueConstraint("usuario_id", "semilla_id", name="uq_trueque_usuario_semilla"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     semilla_id: Mapped[int] = mapped_column(ForeignKey("semillas_trueque.id", ondelete="CASCADE"))
 
 
@@ -80,7 +80,7 @@ class AlertaVeredal(Sincronizable, Base):
     __tablename__ = "alertas_veredales"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id", ondelete="SET NULL"))
+    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     tipo: Mapped[str] = mapped_column(String(20))  # derrumbe | creciente | plaga | otra
     lugar: Mapped[str] = mapped_column(String(200))
     nota: Mapped[str] = mapped_column(String(500), default="")
@@ -94,7 +94,7 @@ class ReporteDerechos(Sincronizable, Base):
     __tablename__ = "reportes_derechos"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     comunidad: Mapped[Comunidad] = mapped_column(enum_col(Comunidad, "ck_reporte_comunidad"))
     tipo: Mapped[str] = mapped_column(String(30))
     tiene_audio: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -106,7 +106,7 @@ class GastoCosecha(Sincronizable, Base):
     __tablename__ = "gastos_cosecha"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     cultivo: Mapped[str] = mapped_column(String(30))
     tipo: Mapped[str] = mapped_column(String(40))
     monto: Mapped[int] = mapped_column(BigInteger)
@@ -116,7 +116,7 @@ class CuadernoCosecha(Base):
     """Lo vendido en la cosecha actual: cultivo, cargas y precio por carga."""
     __tablename__ = "cuadernos_cosecha"
 
-    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     cultivo: Mapped[str] = mapped_column(String(30), default="Café")
     cargas: Mapped[int | None] = mapped_column(Integer)
     precio: Mapped[int | None] = mapped_column(BigInteger)

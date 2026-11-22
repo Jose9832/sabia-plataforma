@@ -11,8 +11,34 @@ from app.models.participacion import (
     SolicitudTrueque,
 )
 from app.models.usuario import Usuario
+from app.models.aluna import (
+    AccessGrant,
+    AccessRequest,
+    AffiliationRequest,
+    AiGeneration,
+    Approval,
+    AuditEvent,
+    CanalBienestar,
+    Community,
+    Knowledge,
+    KnowledgeOwner,
+    Membership,
+    SolicitudOrientacion,
+)
 
 __all__ = [
+    "AccessGrant",
+    "AccessRequest",
+    "AffiliationRequest",
+    "AiGeneration",
+    "Approval",
+    "AuditEvent",
+    "CanalBienestar",
+    "Community",
+    "Knowledge",
+    "KnowledgeOwner",
+    "Membership",
+    "SolicitudOrientacion",
     "AlertaVeredal",
     "Comunidad",
     "CuadernoCosecha",

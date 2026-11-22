@@ -1,42 +1,77 @@
-from sqlalchemy import select
+"""Autenticación única de la plataforma (ALUNA + módulo de Salud SABIA)."""
+import re
+import uuid
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.security import crear_token, hash_clave, verificar_clave
 from app.models import Usuario
-from app.schemas.auth import LoginIn, RegistroIn, TokenOut, UsuarioOut
+from app.services import aluna_service
 from app.services.comun import ErrorNegocio
 
-NOMBRES_COMUNIDAD = {"indigena": "Indígena", "afro": "Afrodescendiente", "campesina": "Campesina"}
+ETIQUETAS_IDENTIDAD = {
+    "visitor": "Visitante General",
+    "student": "Estudiante",
+    "researcher": "Investigador/a",
+    "community_member": "Integrante comunitario (por verificar)",
+    "org_representative": "Representante de organización",
+}
+CORREO = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-def _token_para(usuario: Usuario) -> TokenOut:
-    token = crear_token(str(usuario.id), {"comunidad": usuario.comunidad.value})
-    return TokenOut(access_token=token, usuario=UsuarioOut.model_validate(usuario))
+def sesion_para(usuario: Usuario) -> dict:
+    return {
+        "access_token": crear_token(str(usuario.id), {"codigo": usuario.codigo}),
+        "token_type": "bearer",
+        "user": aluna_service.usuario_dict(usuario),
+    }
 
 
-def registrar(db: Session, datos: RegistroIn) -> TokenOut:
-    existe = db.scalar(select(Usuario).where(Usuario.numero_identificacion == datos.numero_identificacion))
-    if existe:
-        raise ErrorNegocio("Ya existe una cuenta con ese número. Usa «Ingresar».", 409)
-    usuario = Usuario(
-        numero_identificacion=datos.numero_identificacion,
-        nombre=datos.nombre,
-        comunidad=datos.comunidad,
-        clave_hash=hash_clave(datos.clave),
+def iniciar_sesion(db: Session, email: str, clave: str) -> dict:
+    u = db.scalar(select(Usuario).where(func.lower(Usuario.email) == email.strip().lower()))
+    if not u or not verificar_clave(clave, u.clave_hash):
+        raise ErrorNegocio("El correo o la contraseña no coinciden. Verifica tus datos o usa un perfil de demostración.", 401)
+    return sesion_para(u)
+
+
+def entrar_como_demo(db: Session, codigo: str) -> dict:
+    """Selector rápido de perfiles de la demostración (se apaga con ENABLE_DEMO_PROFILES=false)."""
+    if not settings.ENABLE_DEMO_PROFILES:
+        raise ErrorNegocio("Los perfiles de demostración están deshabilitados en este entorno.", 403)
+    u = db.scalar(select(Usuario).where(Usuario.codigo == codigo, Usuario.is_demo.is_(True)))
+    if not u:
+        raise ErrorNegocio("Ese perfil de demostración no existe.", 404)
+    return sesion_para(u)
+
+
+def registrar(db: Session, datos: dict) -> dict:
+    nombre = (datos.get("name") or "").strip()
+    email = (datos.get("email") or "").strip().lower()
+    clave = datos.get("password") or ""
+    identidad = datos.get("identity") or "visitor"
+    if len(nombre) < 3:
+        raise ErrorNegocio("Escribe tu nombre completo.", 422)
+    if not CORREO.match(email):
+        raise ErrorNegocio("Escribe un correo electrónico válido.", 422)
+    if len(clave) < 8:
+        raise ErrorNegocio("La contraseña debe tener al menos 8 caracteres.", 422)
+    if identidad not in ETIQUETAS_IDENTIDAD:
+        raise ErrorNegocio("Identidad de participación no válida.", 422)
+    if db.scalar(select(Usuario).where(func.lower(Usuario.email) == email)):
+        raise ErrorNegocio("Ya existe una cuenta con ese correo. Inicia sesión.", 409)
+
+    u = Usuario(
+        codigo=f"user_{uuid.uuid4().hex[:12]}", email=email, nombre=nombre, identity=identidad,
+        role_label=ETIQUETAS_IDENTIDAD[identidad], avatar="/assets/logos/aluna_isotipo.png", organization=(datos.get("organization") or None),
+        bio=(datos.get("bio") or "").strip(), is_demo=False, clave_hash=hash_clave(clave),
     )
-    db.add(usuario)
+    db.add(u)
+    db.flush()
+    # La filiación nunca se auto-verifica: queda pendiente hasta que la custodia de esa comunidad la valide.
+    if datos.get("communityId"):
+        aluna_service.solicitar_vinculacion(db, u, datos["communityId"], datos.get("rationale") or "", None)
     db.commit()
-    db.refresh(usuario)
-    return _token_para(usuario)
-
-
-def autenticar(db: Session, datos: LoginIn) -> TokenOut:
-    usuario = db.scalar(select(Usuario).where(Usuario.numero_identificacion == datos.numero_identificacion))
-    if not usuario or not verificar_clave(datos.clave, usuario.clave_hash):
-        raise ErrorNegocio("El número o la contraseña no coinciden. Revisa e intenta otra vez.", 401)
-    if datos.comunidad and usuario.comunidad != datos.comunidad:
-        nombre = NOMBRES_COMUNIDAD[usuario.comunidad.value]
-        raise ErrorNegocio(
-            f"Esta cuenta pertenece a la comunidad {nombre}. Cambia de comunidad para entrar.", 403
-        )
-    return _token_para(usuario)
+    db.refresh(u)
+    return sesion_para(u)

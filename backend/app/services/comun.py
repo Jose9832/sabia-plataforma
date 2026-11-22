@@ -38,6 +38,13 @@ def campos_sync(client_id: UUID | None, creado_en_cliente: datetime | None, offl
     }
 
 
+def comunidad_salud(usuario: Usuario) -> Comunidad:
+    """Comunidad del módulo de Salud: exige una membresía verificada en ALUNA."""
+    if not usuario.comunidad:
+        raise ErrorNegocio("Tu perfil aún no tiene una comunidad verificada. Solicita tu vinculación a la custodia de tu comunidad.", 403)
+    return usuario.comunidad
+
+
 def exigir_comunidad(usuario: Usuario, *comunidades: Comunidad) -> None:
     if usuario.comunidad not in comunidades:
         raise ErrorNegocio("Esta sección no está disponible para tu comunidad.", 403)

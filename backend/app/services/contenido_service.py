@@ -18,7 +18,7 @@ from app.models import (
     Visibilidad,
 )
 from app.schemas.contenido import PodcastCrear
-from app.services.comun import ErrorNegocio, buscar_por_client_id, campos_sync
+from app.services.comun import ErrorNegocio, buscar_por_client_id, campos_sync, comunidad_salud
 
 Ventana = Literal["adentro", "afuera"]
 
@@ -28,7 +28,7 @@ def _filtro_ventana(modelo, usuario: Usuario | None, ventana: Ventana):
     if ventana == "adentro":
         if not usuario:
             raise ErrorNegocio("Entra con tu cuenta para ver el contenido de tu comunidad.", 401)
-        return modelo.comunidad == usuario.comunidad
+        return modelo.comunidad == comunidad_salud(usuario)
     return modelo.visibilidad == Visibilidad.afuera
 
 
@@ -73,7 +73,7 @@ def crear_podcast(db: Session, usuario: Usuario, datos: PodcastCrear, offline: b
     podcast = Podcast(
         client_id=client_id,
         usuario_id=usuario.id,
-        comunidad=usuario.comunidad,
+        comunidad=comunidad_salud(usuario),
         titulo=titulo,
         visibilidad=Visibilidad.afuera if datos.compartir else Visibilidad.adentro,
         origen=campos_sync(client_id, None, offline)["origen"],
@@ -110,6 +110,6 @@ def listar_encuentros(db: Session, usuario: Usuario | None, ventana: Ventana) ->
 
 def listar_investigaciones(db: Session, usuario: Usuario | None) -> list[Investigacion]:
     todas = list(db.scalars(select(Investigacion).order_by(Investigacion.id)))
-    if not usuario:
-        return todas
+    if not usuario or not usuario.comunidad:
+        return todas if not usuario else []
     return [i for i in todas if usuario.comunidad.value in i.comunidades]

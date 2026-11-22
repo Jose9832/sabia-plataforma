@@ -3,7 +3,6 @@ import pytest
 from pydantic import ValidationError
 
 from app.core.security import crear_token, decodificar_token, hash_clave, verificar_clave
-from app.schemas.auth import RegistroIn
 from app.schemas.comunidad import AlertaCrear, GastoCrear
 from app.services.contenido_service import analizar_enlace
 
@@ -31,15 +30,6 @@ def test_hash_y_token():
     assert h != "sabia123" and verificar_clave("sabia123", h) and not verificar_clave("otra", h)
     assert decodificar_token(crear_token("7"))["sub"] == "7"
     assert decodificar_token("token-falso") is None
-
-
-def test_registro_valida_con_mensajes_claros():
-    with pytest.raises(ValidationError, match="nombre completo"):
-        RegistroIn(nombre="Jo", numero_identificacion="12345", clave="123456", comunidad="afro")
-    with pytest.raises(ValidationError, match="al menos 5 dígitos"):
-        RegistroIn(nombre="Rosa Palacios", numero_identificacion="12", clave="123456", comunidad="afro")
-    ok = RegistroIn(nombre="  Rosa Palacios ", numero_identificacion="1.234.567", clave="123456", comunidad="afro")
-    assert ok.nombre == "Rosa Palacios" and ok.numero_identificacion == "1234567"
 
 
 def test_alerta_y_gasto():

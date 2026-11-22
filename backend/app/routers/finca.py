@@ -18,7 +18,7 @@ from app.schemas.comunidad import (
 )
 from app.services import finca_service as svc
 
-router = APIRouter(tags=["Mi finca"])
+router = APIRouter(tags=["Salud SABIA · Mi finca"])
 
 
 @router.get("/semillas", response_model=list[SemillaOut])

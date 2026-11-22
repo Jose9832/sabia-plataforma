@@ -30,7 +30,7 @@ class Podcast(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     client_id: Mapped[UUID | None] = mapped_column(unique=True)
-    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id", ondelete="SET NULL"))
+    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     comunidad: Mapped[Comunidad] = mapped_column(enum_col(Comunidad, "ck_podcast_comunidad"), index=True)
     titulo: Mapped[str] = mapped_column(String(200))
     plataforma: Mapped[str] = mapped_column(String(20))  # youtube | spotify

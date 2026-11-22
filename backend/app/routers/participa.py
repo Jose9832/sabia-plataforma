@@ -15,7 +15,7 @@ from app.schemas.sync import PeticionSync, RespuestaSync
 from app.services import participa_service as svc
 from app.services import sync_service
 
-router = APIRouter(tags=["Participa y derechos"])
+router = APIRouter(tags=["Salud SABIA · Participa y derechos"])
 
 
 @router.post("/encuentros/{encuentro_id}/inscripcion", status_code=status.HTTP_201_CREATED)
@@ -53,7 +53,7 @@ def mis_reportes(db: DbDep, usuario: UsuarioDep):
     return svc.mis_reportes(db, usuario)
 
 
-@router.post("/sync", response_model=RespuestaSync, tags=["Sincronización offline"])
+@router.post("/sync", response_model=RespuestaSync, tags=["Salud SABIA · Sincronización offline"])
 def sincronizar(peticion: PeticionSync, db: DbDep, usuario: UsuarioDep):
     """Recibe la cola de acciones guardadas sin señal (alertas, reportes, trueques, gastos…).
 

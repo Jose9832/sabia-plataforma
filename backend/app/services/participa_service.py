@@ -12,7 +12,7 @@ from app.models import (
     Visibilidad,
 )
 from app.schemas.comunidad import InscripcionCrear, MisRegistrosOut, ParticipacionCrear, ReporteCrear
-from app.services.comun import ErrorNegocio, buscar_por_client_id, campos_sync
+from app.services.comun import ErrorNegocio, buscar_por_client_id, campos_sync, comunidad_salud
 from app.services.finca_service import mis_trueques
 
 
@@ -43,7 +43,7 @@ def participar_investigacion(
     inv = db.get(Investigacion, datos.investigacion_id)
     if not inv:
         raise ErrorNegocio("Esa investigación ya no existe.", 404)
-    if usuario.comunidad.value not in inv.comunidades:
+    if comunidad_salud(usuario).value not in inv.comunidades:
         raise ErrorNegocio("Esta investigación no es con tu comunidad.", 403)
     previa = db.scalar(select(SolicitudInvestigacion).where(
         SolicitudInvestigacion.usuario_id == usuario.id, SolicitudInvestigacion.investigacion_id == inv.id))
@@ -59,11 +59,12 @@ def participar_investigacion(
 def crear_reporte(db: Session, usuario: Usuario, datos: ReporteCrear, offline: bool = False) -> tuple[ReporteDerechos, bool]:
     if existente := buscar_por_client_id(db, ReporteDerechos, datos.client_id):
         return existente, True
-    if datos.tipo in ("via", "servicios", "ambiente") and usuario.comunidad.value != "campesina":
+    comunidad = comunidad_salud(usuario)
+    if datos.tipo in ("via", "servicios", "ambiente") and comunidad.value != "campesina":
         raise ErrorNegocio("Ese tipo de reporte es para la comunidad campesina.", 422)
     reporte = ReporteDerechos(
         usuario_id=usuario.id,
-        comunidad=usuario.comunidad,
+        comunidad=comunidad,
         tipo=datos.tipo,
         tiene_audio=datos.tiene_audio,
         foto=datos.foto,
