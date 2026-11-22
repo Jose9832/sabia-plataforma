@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
-echo "→ Aplicando migraciones (Alembic)…"
-alembic upgrade head
+echo "→ Aplicando migraciones (database/migrations)…"
+alembic -c /database/alembic.ini upgrade head
 if [ "${SEED_ON_START:-true}" = "true" ]; then
-  echo "→ Cargando datos de ejemplo…"
+  echo "→ Cargando datos semilla (database/seeds)…"
   python -m app.seed
 fi
 echo "→ Iniciando API en :8000"

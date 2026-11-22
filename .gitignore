@@ -27,3 +27,6 @@ dev-dist/
 Thumbs.db
 desktop.ini
 *.log
+
+# Respaldos locales de la base de datos
+database/respaldos/
