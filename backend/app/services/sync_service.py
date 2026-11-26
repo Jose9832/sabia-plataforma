@@ -29,7 +29,7 @@ from app.schemas.comunidad import (
     SemillaCrear,
     TruequeCrear,
 )
-from app.schemas.contenido import PodcastCrear
+from app.schemas.contenido import PlantaCrear, PodcastCrear
 from app.schemas.sync import OperacionSync, PeticionSync, RespuestaSync, ResultadoSync
 from app.services import contenido_service, finca_service, participa_service
 from app.services.comun import ErrorNegocio
@@ -46,6 +46,7 @@ def _sin_duplicado(fn: Callable) -> Callable:
 # tipo de operación → (esquema de validación, servicio, ¿lleva client_id?)
 OPERACIONES: dict[str, tuple[type[BaseModel], Callable, bool]] = {
     "podcast": (PodcastCrear, contenido_service.crear_podcast, True),
+    "planta": (PlantaCrear, contenido_service.crear_planta, True),
     "semilla": (SemillaCrear, finca_service.crear_semilla, True),
     "trueque": (TruequeCrear, finca_service.proponer_trueque, True),
     "alerta": (AlertaCrear, finca_service.crear_alerta, True),

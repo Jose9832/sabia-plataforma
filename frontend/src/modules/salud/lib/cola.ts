@@ -6,7 +6,7 @@ import { enviar } from "./api";
 import { idb } from "./db";
 
 export type TipoOperacion =
-  | "podcast" | "semilla" | "trueque" | "alerta" | "reporte"
+  | "podcast" | "planta" | "semilla" | "trueque" | "alerta" | "reporte"
   | "gasto" | "gasto_borrar" | "cuaderno" | "cuentas_reiniciar"
   | "inscripcion" | "investigacion";
 

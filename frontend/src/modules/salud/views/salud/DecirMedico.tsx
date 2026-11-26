@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Icono, Simbolo } from "../../components/icons/Icono";
 import { partesCuerpo, sintomas } from "../../data/contenido";
 import { hablar } from "../../lib/voz";
+import { OpcionGrande } from "../../components/comunes";
 import { useApp } from "../../state/store";
 
 const etiqueta = (x: { propia: string | null; nombre: string }) => x.propia || x.nombre;
@@ -20,6 +21,7 @@ export function DecirMedico() {
   const parteSel = useApp(s => s.ui.parteSel);
   const sintomaSel = useApp(s => s.ui.sintomaSel);
   const { setUi, mostrarTexto } = useApp.getState();
+  const ir = useApp(s => s.ir);
   const frase = generarFrase(parteSel, sintomaSel);
   const completa = !!(parteSel && sintomaSel);
 
@@ -38,6 +40,7 @@ export function DecirMedico() {
     <>
       <h2 className="titulo-modulo">Salud</h2>
       <p style={{ color: "var(--texto-suave)" }}>Toca dónde te duele y qué sientes</p>
+      <OpcionGrande icono="hoja" fondo="#E2ECE0" color="var(--verde)" titulo="Botiquín ancestral" desc="Plantas medicinales de nuestra comunidad" onClick={() => ir("salud", "plantas")} />
 
       <div className="paso-titulo"><span className="paso-num">1</span> ¿Dónde te duele?</div>
       <div className="selector-cuerpo">

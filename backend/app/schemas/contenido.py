@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -57,6 +58,25 @@ class PlantaOut(_Base):
     preparacion: str
     precaucion: str
     hospital: str
+    nombre_nativo: str | None = None
+    parte_utilizada: str | None = None
+    visibilidad: Visibilidad = Visibilidad.adentro
+    validada: bool = False
+    autor_nombre: str | None = None
+    client_id: UUID | None = None
+    creado_en: datetime | None = None
+
+
+class PlantaCrear(BaseModel):
+    """Aporte de una planta medicinal. La comunidad NO se envía: la fija el servidor según la membresía verificada."""
+    client_id: UUID | None = None
+    nombre: str = Field(min_length=2, max_length=120)
+    nombre_nativo: str | None = Field(default=None, max_length=120)
+    uso: str = Field(min_length=3, max_length=1500)
+    preparacion: str = Field(min_length=3, max_length=1500)
+    parte_utilizada: str | None = Field(default=None, max_length=80)
+    precaucion: str = Field(default="", max_length=1000)
+    compartir: bool = False
 
 
 class HistoriaOut(_Base):

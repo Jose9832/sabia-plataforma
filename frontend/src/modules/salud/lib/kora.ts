@@ -194,7 +194,7 @@ const intenciones: Intencion[] = [
 /* Plantas por nombre (solo donde la app las muestra) */
 function intencionPlantas(q: string, ctx: CtxKora): Respuesta | null {
   const c = ctx.contexto;
-  const lista = c === "campesina" || c === "afro" ? ctx.datos.plantas.filter(p => p.comunidad === c) : [];
+  const lista = c === "campesina" || c === "afro" || c === "indigena" ? ctx.datos.plantas.filter(p => p.comunidad === c) : [];
   const p = lista.find(x => q.includes(sinTildes(x.nombre).split(" ")[0]));
   if (p) return { texto: `${p.nombre}: ${p.uso} Precaución: ${p.precaucion}`, acciones: [accion(`Ver ficha de ${p.nombre}`, "salud", "plantas", p.slug)] };
   if (lista.length && /\b(plantas?|remedios?|hierbas?|tos|gripa|aromaticas?|bebidas?|botiquin)\b/.test(q))

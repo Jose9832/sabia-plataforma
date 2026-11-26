@@ -216,7 +216,9 @@ def cargar_salud(db: Session, d: dict) -> dict[str, int]:
         resumen["lugares"] = len(d["lugares"])
     if _vacia(db, Planta):
         for p in d["plantas"]:
-            db.add(Planta(**{**p, "comunidad": Comunidad(p["comunidad"])}))
+            # Las plantas del prototipo quedan «solo comunidad» y sin validar: cada comunidad decide si las comparte
+            db.add(Planta(**{**p, "comunidad": Comunidad(p["comunidad"]), "visibilidad": Visibilidad.adentro,
+                             "validada": False, "autor_nombre": "Prototipo SABIA"}))
         resumen["plantas"] = len(d["plantas"])
     if _vacia(db, HistoriaProducto):
         for h in d["historias"]:

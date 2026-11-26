@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 TipoOperacion = Literal[
     "podcast",
+    "planta",
     "semilla",
     "trueque",
     "alerta",

@@ -58,6 +58,15 @@ export interface Planta {
   preparacion: string;
   precaucion: string;
   hospital: string;
+  nombre_nativo?: string | null;
+  parte_utilizada?: string | null;
+  visibilidad?: Visibilidad;
+  /** false = aporte que los mayores o sabedores aún no han revisado */
+  validada?: boolean;
+  autor_nombre?: string | null;
+  client_id?: string | null;
+  /** Guardada en el teléfono: espera señal para enviarse */
+  pendiente?: boolean;
 }
 
 export interface HistoriaProducto {

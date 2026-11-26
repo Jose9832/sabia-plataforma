@@ -1,6 +1,8 @@
 """Contenido de lectura con gobernanza de datos (adentro / afuera)."""
 import re
+import unicodedata
 from typing import Literal
+from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -17,7 +19,7 @@ from app.models import (
     Usuario,
     Visibilidad,
 )
-from app.schemas.contenido import PodcastCrear
+from app.schemas.contenido import PlantaCrear, PodcastCrear
 from app.services.comun import ErrorNegocio, buscar_por_client_id, campos_sync, comunidad_salud
 
 Ventana = Literal["adentro", "afuera"]
@@ -91,11 +93,61 @@ def listar_lugares(db: Session, categoria: str | None) -> list[Lugar]:
     return list(db.scalars(q))
 
 
-def listar_plantas(db: Session, comunidad: Comunidad | None) -> list[Planta]:
+def _normalizar(texto: str) -> str:
+    """Minúsculas y sin tildes: «Estómago» coincide con «estomago»."""
+    return "".join(c for c in unicodedata.normalize("NFD", texto.lower()) if unicodedata.category(c) != "Mn")
+
+
+def listar_plantas(db: Session, usuario: Usuario | None, comunidad: Comunidad | None, busqueda: str | None = None) -> list[Planta]:
+    """Gobernanza: sin sesión (o desde otra comunidad) solo se ven las plantas que su comunidad decidió
+    compartir («afuera»); el integrante verificado ve además las de su propia comunidad («adentro»)."""
     q = select(Planta).order_by(Planta.id)
+    if usuario and usuario.comunidad:
+        q = q.where((Planta.visibilidad == Visibilidad.afuera) | (Planta.comunidad == usuario.comunidad))
+    else:
+        q = q.where(Planta.visibilidad == Visibilidad.afuera)
     if comunidad:
         q = q.where(Planta.comunidad == comunidad)
-    return list(db.scalars(q))
+    plantas = list(db.scalars(q))
+    if busqueda and (clave := _normalizar(busqueda).strip()):
+        # Por nombre, nombre nativo o dolencia (uso y preparación); todas las palabras deben aparecer
+        palabras = clave.split()
+        def coincide(p: Planta) -> bool:
+            pajar = _normalizar(" ".join(filter(None, [p.nombre, p.nombre_nativo, p.cientifico, p.uso, p.preparacion])))
+            return all(w in pajar for w in palabras)
+        plantas = [p for p in plantas if coincide(p)]
+    return plantas
+
+
+def crear_planta(db: Session, usuario: Usuario, datos: PlantaCrear, offline: bool = False) -> tuple[Planta, bool]:
+    """Aporta una planta a la comunidad verificada de la persona (nunca a otra) y evita duplicados si se reenvía."""
+    client_id = datos.client_id
+    if existente := buscar_por_client_id(db, Planta, client_id):
+        return existente, True
+    comunidad = comunidad_salud(usuario)
+    nombre = datos.nombre.strip()
+    planta = Planta(
+        slug=f"{re.sub(r'[^a-z0-9]+', '-', _normalizar(nombre)).strip('-')[:28] or 'planta'}-{uuid4().hex[:8]}",
+        comunidad=comunidad,
+        nombre=nombre,
+        nombre_nativo=(datos.nombre_nativo or "").strip() or None,
+        cientifico=None,
+        color="#E2ECE0",
+        uso=datos.uso.strip(),
+        preparacion=datos.preparacion.strip(),
+        parte_utilizada=(datos.parte_utilizada or "").strip() or None,
+        precaucion=datos.precaucion.strip(),
+        hospital="Si hay señales de alarma o no mejora, ve al centro de salud.",
+        visibilidad=Visibilidad.afuera if datos.compartir else Visibilidad.adentro,
+        validada=False,
+        autor_nombre=usuario.nombre,
+        usuario_id=usuario.id,
+        origen=campos_sync(client_id, None, offline)["origen"],
+        client_id=client_id,
+    )
+    db.add(planta)
+    db.flush()
+    return planta, False
 
 
 def listar_historias(db: Session) -> list[HistoriaProducto]:

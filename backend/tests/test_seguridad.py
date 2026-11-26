@@ -84,3 +84,20 @@ def test_registro_exige_autorizar_el_tratamiento_de_datos():
         with pytest.raises(ErrorNegocio) as e:
             auth_service.registrar(None, {**base, **extra})  # type: ignore[arg-type]
         assert e.value.status_code == 422 and "autorizar" in e.value.mensaje
+
+
+def test_planta_nueva_no_recibe_comunidad_del_cliente():
+    from app.schemas.contenido import PlantaCrear
+
+    # La comunidad no es un campo del aporte: la fija el servidor según la membresía verificada.
+    assert "comunidad" not in PlantaCrear.model_fields
+    p = PlantaCrear(nombre="Paico", uso="Dolor de estómago", preparacion="Infusión de hojas", comunidad="afro")  # type: ignore[call-arg]
+    assert p.compartir is False and not hasattr(p, "comunidad")
+    with pytest.raises(Exception):
+        PlantaCrear(nombre="P", uso="x", preparacion="y")
+
+
+def test_sync_acepta_el_tipo_planta():
+    from app.services.sync_service import OPERACIONES
+
+    assert "planta" in OPERACIONES

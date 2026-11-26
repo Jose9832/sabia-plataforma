@@ -28,6 +28,10 @@ export function crearReconocedor(): Reconocedor | null {
   return r;
 }
 
+/* ---------- Búsqueda ---------- */
+/** Minúsculas y sin tildes: «Estómago» coincide con «estomago». */
+export const normalizar = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
 /* ---------- Montos ---------- */
 export const pesos = (n: number) => "$" + Math.round(n || 0).toLocaleString("es-CO");
 

@@ -569,3 +569,34 @@ UPDATE alembic_version SET version_num='0002' WHERE alembic_version.version_num 
 
 COMMIT;
 
+
+-- 0005 · Registro comunitario de plantas medicinales
+ALTER TABLE plantas ADD COLUMN nombre_nativo VARCHAR(120);
+
+ALTER TABLE plantas ADD COLUMN parte_utilizada VARCHAR(80);
+
+ALTER TABLE plantas ADD COLUMN visibilidad VARCHAR(20) DEFAULT 'adentro' NOT NULL;
+
+ALTER TABLE plantas ADD COLUMN validada BOOLEAN DEFAULT false NOT NULL;
+
+ALTER TABLE plantas ADD COLUMN autor_nombre VARCHAR(120);
+
+ALTER TABLE plantas ADD COLUMN client_id UUID;
+
+ALTER TABLE plantas ADD COLUMN usuario_id INTEGER;
+
+ALTER TABLE plantas ADD COLUMN origen VARCHAR(20) DEFAULT 'en_linea' NOT NULL;
+
+ALTER TABLE plantas ADD COLUMN creado_en TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL;
+
+ALTER TABLE plantas ADD CONSTRAINT ck_planta_visibilidad CHECK (visibilidad IN ('adentro', 'afuera'));
+
+ALTER TABLE plantas ADD CONSTRAINT ck_planta_origen CHECK (origen IN ('en_linea', 'cola_offline'));
+
+ALTER TABLE plantas ADD CONSTRAINT uq_plantas_client_id UNIQUE (client_id);
+
+CREATE INDEX ix_plantas_visibilidad ON plantas (visibilidad);
+
+ALTER TABLE plantas ADD CONSTRAINT fk_plantas_usuario FOREIGN KEY (usuario_id) REFERENCES users (id) ON DELETE SET NULL;
+
+UPDATE plantas SET autor_nombre = 'Prototipo SABIA' WHERE autor_nombre IS NULL;

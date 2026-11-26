@@ -10,6 +10,7 @@ from app.schemas.contenido import (
     HistoriaOut,
     InvestigacionOut,
     LugarOut,
+    PlantaCrear,
     PlantaOut,
     PodcastCrear,
     PodcastOut,
@@ -45,8 +46,22 @@ def lugares(db: DbDep, categoria: Literal["hospital", "rural"] | None = None):
 
 
 @router.get("/plantas", response_model=list[PlantaOut])
-def plantas(db: DbDep, comunidad: Comunidad | None = None):
-    return svc.listar_plantas(db, comunidad)
+def plantas(
+    db: DbDep,
+    usuario: UsuarioOpcionalDep,
+    comunidad: Comunidad | None = None,
+    q: str | None = Query(None, max_length=80, description="Busca por nombre, nombre nativo o dolencia (p. ej. «tos»)"),
+):
+    """Botiquín de plantas. Sin sesión solo lo compartido «afuera»; el integrante verificado ve además lo de su comunidad."""
+    return svc.listar_plantas(db, usuario, comunidad, q)
+
+
+@router.post("/plantas", response_model=PlantaOut, status_code=status.HTTP_201_CREATED)
+def aportar_planta(datos: PlantaCrear, db: DbDep, usuario: UsuarioDep):
+    """Aporta una planta a la comunidad verificada de la persona. Queda «sin validar» hasta que los mayores la revisen."""
+    planta, _ = svc.crear_planta(db, usuario, datos)
+    db.commit()
+    return planta
 
 
 @router.get("/historias", response_model=list[HistoriaOut])
