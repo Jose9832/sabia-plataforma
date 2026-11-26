@@ -21,10 +21,6 @@ export function Puertas() {
 
   return (
     <div className="puertas">
-      <div className="logo"><Icono nombre="logo" /></div>
-      <h1>SABIA</h1>
-      <div className="lema">Saberes, Ancestralidad, Bioculturalidad<br />e Inteligencia Articulada</div>
-      <div className="chip-piloto">Piloto · Universidad del Magdalena</div>
       <div className="pregunta">¿Por dónde quieres entrar?</div>
       <div className="puertas-opciones">
         <div role="button" className="puerta adentro" onClick={entrarAMiComunidad}>

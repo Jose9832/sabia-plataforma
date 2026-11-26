@@ -108,7 +108,7 @@ export const Navbar: React.FC = () => {
     { 
       id: 'wellness', 
       label: 'Bienestar y Orientación', 
-      desc: 'Módulo independiente de salud y apoyo',
+      desc: 'Salud, derechos y orientación',
       icon: <HeartHandshake className="w-4 h-4 text-rose-600 dark:text-rose-400" /> 
     },
     { 

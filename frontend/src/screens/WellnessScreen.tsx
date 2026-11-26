@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   PhoneCall,
   LifeBuoy,
-  ShieldAlert,
   Lock,
   HeartPulse,
   WifiOff
@@ -86,31 +85,21 @@ export const WellnessScreen: React.FC = () => {
 
       {/* Header with Architectural Separation Notice (P1.5) */}
       <div className="space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-[#004B87] dark:bg-[#132C3E] dark:text-aluna-cyan border border-sky-200 dark:border-[#1E3E54]">
-          <ShieldAlert className="w-3.5 h-3.5" />
-          <span>Módulo independiente · Datos aislados del repositorio de saberes y de la consulta con IA</span>
-        </div>
-
         <h1 className="font-serif font-bold text-3xl sm:text-4xl text-[#06233B] dark:text-white">
           Orientación, Salud Intercultural y Bienestar Comunitario
         </h1>
 
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
-          Este módulo comparte únicamente la sesión básica (<strong className="text-[#06233B] dark:text-white">{currentUser.name}</strong>), la navegación y el sistema visual con SABIA, pero mantiene <strong className="text-[#06233B] dark:text-white">separación total de datos</strong>: ningún requerimiento de orientación o salud ingresa al repositorio cultural ni a la consulta de saberes con IA. La guía de chat <strong>Ceiba</strong> de este módulo responde sin conexión, con reglas propias, y no guarda tus mensajes en el servidor.
+        <p className="text-sm text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
+          Hola, <strong className="text-[#06233B] dark:text-white">{currentUser.name}</strong>. Aquí encuentras primeros auxilios, plantas, derechos y rutas de atención, incluso sin internet.
         </p>
       </div>
 
-      {/* Strict Ethical & Legal Safeguard Banner (Ley 1581 de 2012) */}
-      <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs flex items-start gap-4 shadow-sm">
-        <Lock className="w-6 h-6 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <h4 className="font-bold text-amber-950 dark:text-white text-sm">
-            Principio de Minimización y Separación de Datos Sensibles (Referencia Ley 1581 de 2012)
-          </h4>
-          <p className="text-amber-900 dark:text-amber-200 leading-relaxed">
-            Este módulo <strong>NO recopila historias clínicas ni diagnósticos médicos</strong>, y no comparte embeddings, prompts ni almacenamiento con Ceiba. Sus guías de primeros auxilios, plantas y rutas de atención <strong>funcionan sin internet</strong> y lo que envíes sin señal se sincroniza al volver la conexión.
-          </p>
-        </div>
+      {/* Aviso de separación de datos (Ley 1581 de 2012) */}
+      <div className="px-5 py-4 rounded-2xl bg-white dark:bg-[#0D212E] border border-slate-200 dark:border-[#1E3E54] border-l-4 border-l-[#F5B82E] text-xs flex items-start gap-3 shadow-sm">
+        <Lock className="w-5 h-5 text-[#004B87] dark:text-aluna-cyan shrink-0 mt-0.5" />
+        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+          <strong className="text-[#06233B] dark:text-white">Datos aparte.</strong> Este módulo no recopila historias clínicas ni diagnósticos, y nada de lo que hagas aquí pasa por Ceiba ni por el repositorio de saberes (Ley 1581 de 2012). Lo que envíes sin señal se sincroniza al volver la conexión.
+        </p>
       </div>
 
       {/* Tabs: módulo SABIA · canales institucionales */}

@@ -15,8 +15,14 @@
    ========================================================================= */
 /* El pie y la barra superior fija los pone ALUNA */
 .pie-web { display: none !important; }
-.encabezado { position: relative !important; top: auto !important; z-index: 1; border-radius: 24px 24px 0 0; }
-.telefono { min-height: 70vh; border-radius: 24px; overflow: clip; box-shadow: 0 1px 2px rgba(92,62,32,0.06), 0 6px 16px rgba(92,62,32,0.09); }
+.encabezado { position: relative !important; top: auto !important; z-index: 1; border-radius: 16px 16px 0 0; box-shadow: none; }
+/* Sin marco propio: el módulo se integra con las tarjetas de la plataforma */
+.telefono { min-height: 70vh; border-radius: 16px; overflow: clip; border: 1px solid var(--linea); box-shadow: none; }
+/* Un solo encabezado: el de la plataforma. Aquí solo quedan la navegación y el estado de red. */
+.telefono, .telefono.afuera { --cabecera: var(--verde-oscuro); }
+.encabezado .marca { display: none; }
+.menu-superior { margin: 0 !important; }
+.fila-encabezado { justify-content: space-between; }
 /* Tailwind (preflight) quita negritas y viñetas: se devuelven dentro del módulo */
 h1, h2, h3 { font-weight: 700; }
 ul { list-style: disc; }
@@ -29,6 +35,14 @@ ul { list-style: disc; }
   .menu-superior { flex-wrap: wrap; justify-content: center; }
   .contenido { padding: 32px 28px 48px; }
 }
+
+/* Portada del módulo: sin logo propio (lo da la plataforma), puertas en azul y dorado, fondo liso */
+.telefono.sin-ventana { background: var(--fondo-base); }
+.puertas .pregunta { margin-top: 0; color: var(--verde-oscuro); }
+.puerta.adentro { background: linear-gradient(145deg, #0A5FA8 0%, #004B87 55%, #06233B 100%); }
+.puerta.afuera  { background: linear-gradient(145deg, #F5B82E 0%, #D99A12 55%, #A9740A 100%); color: #06233B; }
+.puerta.afuera small { color: #3B2A05; }
+.puerta { box-shadow: 0 4px 10px rgba(6,35,59,0.12), 0 14px 28px rgba(6,35,59,0.16), inset 0 1px 0 rgba(255,255,255,0.32); }
 
 /* Menú inferior y botón de Ceiba (fijos a la ventana): se ocultan cuando el módulo no está en pantalla */
 .menu-inferior { transition: opacity .2s ease, transform .2s ease; }
