@@ -1,0 +1,77 @@
+/* =========================================================================
+   Tema oscuro de las secciones de cada comunidad (Salud, Participa, Memoria, Ayuda, Botiquín…).
+   Este archivo NO se aísla bajo .sabia-modulo a propósito (está fuera de /styles): necesita el selector
+   `.dark` de la plataforma. Sin fondo propio: todo fluye sobre el fondo oscuro de la web (#07131B).
+   Las hojas del módulo usan variables, así que basta con redefinirlas aquí con la paleta de ALUNA.
+   ========================================================================= */
+.dark .sabia-modulo {
+  color-scheme: dark;
+  /* Superficies: las mismas de las tarjetas de la plataforma */
+  --fondo-base: #07131B;
+  --superficie: #0D212E;
+  --superficie-info: #0A1924;
+  --linea: #1E3E54;
+  --arena: #132C3E;
+  /* Texto de alto contraste */
+  --texto: #F1F5F9;
+  --texto-suave: #A9BCCB;
+  /* Marca: azul y dorado de ALUNA (los nombres «verde» y «tierra» se conservan por las vistas) */
+  --verde: #3490D6;
+  --verde-oscuro: #1D5C93;
+  --verde-claro: rgba(52, 144, 214, 0.16);
+  --tierra: #E0A020;
+  --tierra-clara: rgba(245, 184, 46, 0.35);
+  --tierra-suave: rgba(245, 184, 46, 0.14);
+  --azul: #6BB4E8;
+  --morado: #A99BD6;
+  --alerta: #E0593C;
+  --alerta-fondo: rgba(224, 89, 60, 0.16);
+  --ambar: #F5B82E;
+  /* Relieve: bordes de luz sutiles y sombras profundas */
+  --luz: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(0, 0, 0, 0.28), var(--luz);
+  --sombra-fuerte: 0 2px 4px rgba(0, 0, 0, 0.4), 0 14px 30px rgba(0, 0, 0, 0.4), var(--luz);
+  --sombra-presion: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Bordes sutiles en todas las tarjetas */
+.dark .sabia-modulo :is(.tarjeta-modulo, .opcion-grande, .relato, .historia, .boton-sintoma, .selector-cuerpo, .caja-conectar,
+  .formulario, .opcion-reporte, .lugar-cabecera, .tarjeta-palabra, .campo, .mes, .encuentro, .semilla, .alerta-item, .caja-derechos) {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.dark .sabia-modulo .boton-ancho.secundario { border-color: var(--verde); }
+
+/* Chips, íconos y etiquetas con colores pastel «en línea» (los datos traen fondos claros del prototipo):
+   se invierten conservando el tono, así «Afrodescendiente», «Indígena», «Campesina», etc. siguen
+   reconocibles pero sobre un fondo oscuro y con el ícono claro. */
+.dark .sabia-modulo [style*="background: rgb("]:not([style*="background: rgb(184, 68, 42)"]) {
+  filter: invert(1) hue-rotate(180deg);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+/* Los íconos que van DENTRO de un chip invertido no deben volver a invertirse al anidar otro chip */
+.dark .sabia-modulo [style*="background: rgb("] [style*="background: rgb("] { filter: none; }
+
+/* Piezas con colores claros fijos en las hojas del módulo */
+.dark .sabia-modulo .figura .zona { fill: rgba(255, 255, 255, 0.14); stroke: #0D212E; }
+.dark .sabia-modulo .figura .zona:hover { fill: rgba(245, 184, 46, 0.45); }
+.dark .sabia-modulo .figura .zona.sel { fill: var(--verde); }
+.dark .sabia-modulo .lugar-ico { background: rgba(107, 180, 232, 0.14); }
+.dark .sabia-modulo :is(.resultado-reporte.cola, .estado-envio.pendiente, .consejo-precio) { background: rgba(245, 184, 46, 0.16); color: #F5D58A; }
+.dark .sabia-modulo .linea-tiempo::before { background: rgba(255, 255, 255, 0.18); }
+.dark .sabia-modulo .kora-entrada input:focus { background: var(--superficie-info); }
+.dark .sabia-modulo .boton-sintoma.sel, .dark .sabia-modulo .boton-sintoma.sel .simbolo { color: #06233B; }
+.dark .sabia-modulo .toast { border: 1px solid rgba(255, 255, 255, 0.14); }
+
+/* Cabecera del espacio de comunidad (ícono de la comunidad con fondo pastel) */
+.dark .espacio-icono { filter: invert(1) hue-rotate(180deg); border-color: rgba(255, 255, 255, 0.12); }
+
+/* Textos con colores oscuros fijos del prototipo: se aclaran conservando el matiz (rojo, verde, ámbar) */
+.dark .sabia-modulo .boton-plataforma.yt { color: #FF8A82; }
+.dark .sabia-modulo .boton-plataforma.sp { color: #4ADE80; }
+.dark .sabia-modulo :is(.emergencia, .caja-urgente) { color: #FFC2B3; }
+.dark .sabia-modulo .hito-anio { color: #F2A98A; }
+/* Colores de texto en línea (etiquetas de tipo, fechas…): mismo truco de inversión que los chips */
+.dark .sabia-modulo [style*="color: rgb("]:not([style*="background"]):not([style*="background: rgb(184, 68, 42)"]) {
+  filter: invert(1) hue-rotate(180deg);
+}
+.dark .sabia-modulo [style*="background: rgb("] [style*="color: rgb("] { filter: none; }

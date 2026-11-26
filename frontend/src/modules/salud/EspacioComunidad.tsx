@@ -6,6 +6,7 @@ import { comunidades, navs, type IdComunidad, type Pantalla } from "./data/conte
 import type { Sesion } from "./data/tipos";
 import { enLinea, useApp } from "./state/store";
 import "./styles/index.css";
+import "./tema-oscuro.css";
 import { Aprende } from "./views/Aprende";
 import { Ayuda } from "./views/ayuda/Ayuda";
 import { Finca } from "./views/finca/Finca";
@@ -85,7 +86,7 @@ export function EspacioComunidad({ comunidad, sesion, onIniciarSesion, onVerComu
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-4">
           <span
-            className="w-14 h-14 rounded-2xl inline-flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#1E3E54]"
+            className="espacio-icono w-14 h-14 rounded-2xl inline-flex items-center justify-center shrink-0 border border-slate-200"
             style={{ background: info.fondo, color: info.color }}
           >
             <IconoComunidad comunidad={comunidad} tam={30} />
