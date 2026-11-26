@@ -106,7 +106,7 @@ const intenciones: Intencion[] = [
       if (c === "campesina") return { texto: "En Salud tienes primeros auxilios para el campo y la opción de armar una frase para el médico con la figura del cuerpo.",
         acciones: [accion("Primeros auxilios", "salud", "auxilios"), accion("Decir qué me duele al médico", "salud", "decir")] };
       if (c === "afro") return { texto: "En Salud encuentras el botiquín de plantas con cuándo ir al centro de salud, y la ruta de salud con tus derechos. Si es grave, llama al 123.",
-        acciones: [accion("Botiquín de plantas", "salud", "plantas"), accion("Ruta de salud y derechos", "salud", "ruta"), llamar("Llamar al 123", "123")] };
+        acciones: [accion("Botiquín ancestral", "salud", "plantas"), accion("Ruta de salud y derechos", "salud", "ruta"), llamar("Llamar al 123", "123")] };
       return { texto: "La sección de Salud está en el espacio de tu comunidad. Si es grave, llama al 123.", acciones: [llamar("Llamar al 123", "123"), accion("Iniciar sesión", "acceso", null, null, "cualquiera")] };
     } },
 
@@ -191,14 +191,32 @@ const intenciones: Intencion[] = [
     responder: () => ({ texto: "En el espacio de la comunidad → Historias está quién hace cada producto y su historia. Algunas asociaciones autorizan su contacto para comprar directo, sin intermediarios.", acciones: [accion("Ver historias", "historias", null, null, "afuera")] }) }
 ];
 
-/* Plantas por nombre (solo donde la app las muestra) */
+/* Plantas por nombre o por dolencia (solo donde la app las muestra) */
+const PALABRAS_VACIAS = new Set(["planta", "plantas", "remedio", "remedios", "hierba", "hierbas", "botiquin", "para", "sirve", "sirven", "cual", "cuales", "como", "tengo", "tiene", "algo", "dame", "quiero", "puedo", "usar", "hay", "que", "una", "unas", "con", "del", "los", "las", "mis"]);
+const nombreCorto = (nombre: string) => nombre.replace(/\s*\(.*?\)/g, "").trim();
+
 function intencionPlantas(q: string, ctx: CtxKora): Respuesta | null {
   const c = ctx.contexto;
   const lista = c === "campesina" || c === "afro" || c === "indigena" ? ctx.datos.plantas.filter(p => p.comunidad === c) : [];
-  const p = lista.find(x => q.includes(sinTildes(x.nombre).split(" ")[0]));
-  if (p) return { texto: `${p.nombre}: ${p.uso} Precaución: ${p.precaucion}`, acciones: [accion(`Ver ficha de ${p.nombre}`, "salud", "plantas", p.slug)] };
-  if (lista.length && /\b(plantas?|remedios?|hierbas?|tos|gripa|aromaticas?|bebidas?|botiquin)\b/.test(q))
-    return { texto: `En el botiquín están ${lista.map(x => x.nombre.split(" ")[0].toLowerCase()).join(", ")}. Cada ficha dice para qué sirve, cómo se prepara y cuándo ir al médico.`,
+  /* 1) Una planta nombrada */
+  const p = lista.find(x => {
+    const primera = sinTildes(nombreCorto(x.nombre)).trim().split(/\s+/)[0];
+    return primera.length >= 3 && q.includes(primera);
+  });
+  if (p) return { texto: `${nombreCorto(p.nombre)}: ${p.uso}${p.precaucion ? ` Precaución: ${p.precaucion}` : ""}`, acciones: [accion(`Ver ficha de ${nombreCorto(p.nombre)}`, "salud", "plantas", p.slug)] };
+  if (!lista.length) return null;
+  /* 2) Una dolencia («tos», «dolor de estómago»): las plantas cuyo uso la menciona */
+  const palabras = sinTildes(q).split(/\s+/).filter(w => w.length >= 3 && !PALABRAS_VACIAS.has(w));
+  const puntuadas = lista
+    .map(x => ({ x, puntos: palabras.filter(w => sinTildes([x.nombre, x.nombre_nativo, x.uso, x.preparacion].filter(Boolean).join(" ")).includes(w)).length }))
+    .filter(e => e.puntos > 0)
+    .sort((a, b) => b.puntos - a.puntos);
+  const pideBotiquin = /\b(plantas?|remedios?|hierbas?|aromaticas?|bebidas?|botiquin|tos|gripa|fiebre|estomago)\b/.test(q);
+  if (pideBotiquin && puntuadas.length)
+    return { texto: `Para eso se usan: ${puntuadas.slice(0, 4).map(e => nombreCorto(e.x.nombre)).join(", ")}. Cada ficha dice cómo se prepara y cuándo ir al médico. Si es grave, llama al 123.`,
+      acciones: puntuadas.slice(0, 3).map(e => accion(`Ver ficha de ${nombreCorto(e.x.nombre)}`, "salud", "plantas", e.x.slug)) };
+  if (pideBotiquin)
+    return { texto: `En el botiquín están ${lista.map(x => nombreCorto(x.nombre)).join(", ")}. Cada ficha dice para qué sirve, cómo se prepara y cuándo ir al médico.`,
       acciones: [accion("Abrir el botiquín", "salud", "plantas")] };
   return null;
 }

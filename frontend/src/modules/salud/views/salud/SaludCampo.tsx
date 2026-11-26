@@ -74,8 +74,8 @@ export function SaludCampo() {
         </div>
         <div role="button" className="opcion-grande" onClick={() => ir("salud", "plantas")}>
           <span className="ico" style={{ background: "#E2ECE0", color: "var(--verde)" }}><Icono nombre="hoja" /></span>
-          <span><strong>Plantas de la vereda</strong><small>Para qué sirven y cuándo ir al médico</small></span>
-          <BotonEscuchar texto="Plantas de la vereda. Para qué sirven, cómo se preparan y cuándo hay que ir al médico." />
+          <span><strong>Botiquín ancestral</strong><small>Plantas de la vereda: para qué sirven y cuándo ir al médico</small></span>
+          <BotonEscuchar texto="Botiquín ancestral. Plantas de la vereda: para qué sirven, cómo se preparan y cuándo hay que ir al médico." />
         </div>
       </div>
       <button className="enlace-secundario" onClick={() => ir("salud", "decir")}>

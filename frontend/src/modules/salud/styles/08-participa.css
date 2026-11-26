@@ -1,9 +1,5 @@
 /* SABIA · 8. Participa y aprende (extraído sin cambios de la hoja original v3) */
 /* ---------- 8. PARTICIPA Y APRENDE ---------- */
-.chip-piloto {
-  align-self: center; margin: -6px 0 14px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
-  letter-spacing: .3px; color: var(--verde); background: var(--verde-claro); box-shadow: var(--luz);
-}
 .encuentro { display: flex; flex-direction: column; }
 .encuentro-fecha { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
 .encuentro-fecha svg { width: 18px; height: 18px; }

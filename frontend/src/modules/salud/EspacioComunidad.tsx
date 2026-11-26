@@ -53,6 +53,7 @@ export function EspacioComunidad({ comunidad, sesion, onIniciarSesion, onVerComu
 
   const nav = useApp(s => s.nav);
   const conectado = useApp(s => enLinea(s));
+  const servidorCaido = useApp(s => s.servidorCaido);
   const pendientes = useApp(s => s.cola.filter(o => o.usuario_id === s.sesion?.usuario.id).length);
   const alternarRed = useApp(s => s.alternarRed);
   const ir = useApp(s => s.ir);
@@ -100,13 +101,13 @@ export function EspacioComunidad({ comunidad, sesion, onIniciarSesion, onVerComu
           onClick={alternarRed}
           title={pendientes ? `${pendientes} envío(s) esperando señal` : "Toca para simular que no hay señal"}
           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border ${
-            conectado
+            conectado && !servidorCaido
               ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
               : "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800"
           }`}
         >
-          <span className={`w-2 h-2 rounded-full ${conectado ? "bg-emerald-500" : "bg-amber-500"}`} />
-          {conectado ? "En línea" : "Sin conexión"}
+          <span className={`w-2 h-2 rounded-full ${conectado && !servidorCaido ? "bg-emerald-500" : "bg-amber-500"}`} />
+          {!conectado ? "Sin conexión" : servidorCaido ? "Sin respuesta del servidor" : "En línea"}
           {pendientes > 0 && <span className="px-1.5 rounded-full bg-amber-200 text-amber-900">{pendientes}</span>}
         </button>
       </header>

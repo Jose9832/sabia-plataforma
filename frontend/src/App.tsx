@@ -4,6 +4,7 @@ import { AlunaProvider, useAluna } from './context/AlunaContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { NotificationToast } from './components/common/NotificationToast';
+import { ActualizacionPwa } from './components/common/ActualizacionPwa';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { KnowledgeDetailModal } from './components/common/KnowledgeDetailModal';
 import { RequestAccessModal } from './components/common/RequestAccessModal';
@@ -116,6 +117,7 @@ const MainLayout: React.FC = () => {
 
       {/* 5. Notifications Toast */}
       <NotificationToast />
+      <ActualizacionPwa />
 
     </div>
   );

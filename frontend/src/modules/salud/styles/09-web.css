@@ -1,46 +1,14 @@
-/* SABIA · 9. Versión web (extraído sin cambios de la hoja original v3) */
-/* =========================================================================
-   9. VERSIÓN WEB
-   Sin marco de teléfono. En computador: menú arriba, contenido ancho y
-   tarjetas en columnas. En celular: se comporta como app (menú abajo).
-   ========================================================================= */
-body { display: block; padding: 0; min-height: 100vh; background: var(--fondo-base); }
-.telefono {
-  width: 100%; height: auto; min-height: 100vh; overflow: visible;
-  border: none; border-radius: 0; box-shadow: none; background: var(--fondo-base);
-}
-.barra-estado, .indicador-inicio { display: none !important; }
-.encabezado { position: sticky; top: 0; z-index: 40; }
+/* SABIA · 9. Versión web
+   Las secciones son páginas nativas de la plataforma: sin marco de teléfono, sin encabezado ni menú propios.
+   En computador el contenido es ancho y las tarjetas van en columnas; en celular se apila. */
 .contenido { flex: 1; overflow: visible; width: 100%; max-width: 1120px; margin: 0 auto; }
 .toast { position: fixed; left: 50%; right: auto; width: min(420px, calc(100% - 32px)); transform: translate(-50%, 10px); }
 .toast.visible { transform: translate(-50%, 0); }
 .pantalla-medico { position: fixed; }
-.pie-web { display: none; }
-.puertas-opciones { display: flex; flex-direction: column; }
 
 /* ---------- Computador y tableta horizontal ---------- */
 @media (min-width: 821px) {
-  .encabezado {
-    flex-direction: row; align-items: center; gap: 16px;
-    padding: 14px max(32px, calc((100vw - 1120px) / 2));
-  }
-  .fila-encabezado { flex: 1; gap: 24px; }
-  .marca svg { width: 30px; height: 30px; }
-  .menu-superior { display: flex; gap: 4px; margin: 0 auto; }
-  .menu-superior button {
-    display: flex; align-items: center; gap: 8px; padding: 10px 16px; cursor: pointer;
-    border: none; border-radius: 12px; background: none; color: rgba(255,255,255,0.82);
-    font-size: 15px; font-weight: 600; transition: background .2s, color .2s;
-  }
-  .menu-superior button:hover { background: rgba(255,255,255,0.10); color: #fff; }
-  .menu-superior button.activo { background: rgba(255,255,255,0.18); color: #fff; font-weight: 800; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); }
-  .menu-superior svg { width: 20px; height: 20px; }
-  .boton-puerta { width: auto; flex-shrink: 0; }
-  .boton-puerta .cambiar { margin-left: 12px; }
-  .menu-inferior { display: none; }
-
   .contenido { padding: 40px 32px 56px; }
-  .contenido[data-pantalla="acceso"] { max-width: 560px; }
   .contenido[data-pantalla="salud"] { max-width: 860px; }
   .saludo h2 { font-size: 38px; }
   .saludo p, .subtitulo-pantalla { font-size: 18px; }
@@ -59,44 +27,19 @@ body { display: block; padding: 0; min-height: 100vh; background: var(--fondo-ba
   .meses { grid-template-columns: repeat(12, 1fr); }
   .resumen-cuentas { max-width: 860px; }
 
-  /* Portada: las dos puertas lado a lado */
-  .contenido[data-pantalla="puertas"] { padding-top: 56px; }
-  .puertas { align-items: center; }
-  .puertas .logo svg { width: 72px; height: 72px; }
-  .puertas h1 { font-size: 52px; letter-spacing: 6px; }
-  .lema { font-size: 16px; }
-  .pregunta { font-size: 22px; margin: 6px 0 22px; }
-  .puertas-opciones { flex-direction: row; gap: 24px; width: 100%; max-width: 980px; }
-  .puerta { flex: 1; min-height: 280px; padding: 40px 32px; margin-bottom: 0; flex-direction: column; align-items: flex-start; justify-content: flex-end; }
-  .puerta .grande svg { width: 64px; height: 64px; }
-  .puerta strong { font-size: 30px; }
-  .puerta small { font-size: 16px; max-width: 340px; }
-  .puerta:hover { transform: translateY(-4px); }
-  .boton-voz { margin-top: 26px; }
-
   .caja-frase { bottom: 20px; margin: 24px 0 0; border-radius: 24px; }
-  .pie-web {
-    display: block; padding: 22px 32px; text-align: center; font-size: 13px; line-height: 1.6;
-    color: var(--texto-suave); border-top: 1px solid var(--linea);
-  }
-  .telefono.sin-ventana .pie-web { border-top: none; }
 }
 
-/* ---------- Celular: se comporta como app ---------- */
+/* ---------- Celular ---------- */
 @media (max-width: 820px) {
-  .menu-superior { display: none; }
-  .encabezado { padding: 12px 16px 14px; }
-  .menu-inferior { position: fixed; left: 0; right: 0; bottom: 0; padding: 8px 8px max(12px, env(safe-area-inset-bottom)); }
-  .contenido { padding: 22px 18px 112px; }
-  .telefono.sin-ventana .contenido { padding-bottom: 32px; }
-  .caja-frase { bottom: 84px; margin: 22px 0 0; border-radius: 24px; }
-  .toast { bottom: 96px; }
+  .contenido { padding: 22px 18px 32px; }
+  .caja-frase { bottom: 16px; margin: 22px 0 0; border-radius: 24px; }
+  .toast { bottom: 24px; }
 }
 
 /* Ajustes finos de la versión web */
 .caja-frase-guia { display: none; }
 @media (min-width: 821px) {
-  .marca small, .estado-red, .boton-puerta { white-space: nowrap; }
   /* Salud: figura y síntomas a la izquierda, frase fija a la derecha */
   .contenido[data-pantalla="salud"]:not(:has(> .caja-frase, > .caja-frase-guia)) { max-width: 1120px; }
   .contenido[data-pantalla="salud"]:has(> .caja-frase, > .caja-frase-guia) {
@@ -115,17 +58,6 @@ body { display: block; padding: 0; min-height: 100vh; background: var(--fondo-ba
   .caja-frase-guia small { font-size: 12px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--texto-suave); }
   .caja-frase-guia p { margin-top: 8px; font-size: 16px; line-height: 1.5; color: var(--texto-suave); }
 }
-@media (min-width: 821px) and (max-width: 1180px) {
-  .marca small { display: none; }
-  .menu-superior button { padding: 10px 11px; font-size: 14px; }
-  .boton-puerta b { display: none; }
-  .boton-puerta .cambiar { margin-left: 6px; }
-  .estado-red #textoRed { display: none; }
-}
-@media (min-width: 821px) and (max-width: 960px) {
-  .menu-superior button span { display: none; }
-}
 
 .tarjeta-modulo .insignia-ventana { display: inline-block; width: auto; font-size: 11px; color: var(--tierra); }
 .contenido[data-pantalla="salud"] > .volver { justify-self: start; }
-

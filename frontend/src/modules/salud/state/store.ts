@@ -76,6 +76,8 @@ interface Estado {
   modoSinConexion: boolean;
   navegadorEnLinea: boolean;
   sincronizando: boolean;
+  /** El último envío no obtuvo respuesta del servidor (aunque el teléfono tenga señal) */
+  servidorCaido: boolean;
   toast: { texto: string; n: number } | null;
   fraseMedico: string | null;
   datos: Datos;
@@ -115,7 +117,8 @@ export const enLinea = (s: Pick<Estado, "modoSinConexion" | "navegadorEnLinea">)
 
 let timerToast: ReturnType<typeof setTimeout> | undefined;
 let iniciadoModulo = false;
-let sincronizandoAhora = false;
+/* El envío que está en marcha: quien pide enviar mientras tanto espera su resultado en vez de salirse */
+let envioEnCurso: Promise<void> | null = null;
 
 export const useApp = create<Estado>()((set, get) => ({
   nav: { ventana: "afuera", pantalla: "inicio", sub: null, detalle: null, n: 0 },
@@ -129,6 +132,7 @@ export const useApp = create<Estado>()((set, get) => ({
   modoSinConexion: false,
   navegadorEnLinea: typeof navigator === "undefined" ? true : navigator.onLine,
   sincronizando: false,
+  servidorCaido: false,
   toast: null,
   fraseMedico: null,
   datos: datosIniciales(),
@@ -245,33 +249,46 @@ export const useApp = create<Estado>()((set, get) => ({
     if (!u) return null;
     const op: Operacion = { id, tipo, datos, creado_en: new Date().toISOString(), usuario_id: u.id };
     set(s => ({ cola: [...s.cola, op] }));
-    void agregarACola(op).then(() => { if (enLinea(get())) void get().sincronizar(true); });
+    void agregarACola(op).then(async () => {
+      if (!enLinea(get())) return;
+      await get().sincronizar(true);
+      /* Si el envío que ya estaba en marcha no incluía esta operación, se intenta de nuevo con ella */
+      if (get().cola.some(o => o.id === op.id) && !get().servidorCaido) await get().sincronizar(true);
+      /* Hay señal pero el servidor no respondió: se dice la verdad (queda guardado, no enviado) */
+      if (get().servidorCaido && get().cola.some(o => o.id === op.id)) {
+        get().aviso("El servidor no responde: quedó guardado en tu teléfono y se enviará cuando vuelva la conexión.");
+      }
+    });
     return op;
   },
 
   sincronizar: async (silencioso = false) => {
+    if (envioEnCurso) return envioEnCurso;
     const s = get();
-    if (sincronizandoAhora || !enLinea(s) || !s.sesion) return;
+    if (!enLinea(s) || !s.sesion) return;
     const { token, usuario } = s.sesion;
     if (!s.cola.some(o => o.usuario_id === usuario.id)) return;
-    sincronizandoAhora = true;
     set({ sincronizando: true });
-    try {
-      const { enviadas, errores } = await enviarCola(token, usuario.id);
-      set({ cola: await leerCola() });
-      if (!silencioso && enviadas > 0) get().aviso(`Hay señal: se enviaron ${enviadas} envío(s) guardado(s)`);
-      if (errores.length) get().aviso(`No se pudo enviar: ${errores[0]}`);
-      await get().cargarDatos();
-    } catch (e) {
-      if (e instanceof ErrorApi && e.status === 401) {
-        get().ir("inicio");
-        get().aviso("Tu sesión terminó. Entra otra vez con tu cuenta.");
+    envioEnCurso = (async () => {
+      try {
+        const { enviadas, errores } = await enviarCola(token, usuario.id);
+        set({ cola: await leerCola(), servidorCaido: false });
+        if (!silencioso && enviadas > 0) get().aviso(`Hay señal: se enviaron ${enviadas} envío(s) guardado(s)`);
+        if (errores.length) get().aviso(`No se pudo enviar: ${errores[0]}`);
+        await get().cargarDatos();
+      } catch (e) {
+        if (e instanceof ErrorApi && e.status === 401) {
+          get().ir("inicio");
+          get().aviso("Tu sesión terminó. Entra otra vez con tu cuenta.");
+        }
+        /* Sin conexión con el servidor: todo sigue guardado en la cola. */
+        set({ servidorCaido: true });
+      } finally {
+        envioEnCurso = null;
+        set({ sincronizando: false });
       }
-      /* Sin conexión con el servidor: todo sigue guardado en la cola. */
-    } finally {
-      sincronizandoAhora = false;
-      set({ sincronizando: false });
-    }
+    })();
+    return envioEnCurso;
   },
 
   setCuentas: fn => {

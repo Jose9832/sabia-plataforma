@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['logo-ceiba.svg', 'icons/*.png'],
       manifest: {
         name: 'SABIA · Diálogo de Saberes UNIMAGDALENA',
@@ -21,7 +21,7 @@ export default defineConfig({
         start_url: '/',
         display: 'standalone',
         background_color: '#F8FAFC',
-        theme_color: '#1D6A4E',
+        theme_color: '#004B87',
         icons: [
           { src: 'icons/icono-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icons/icono-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

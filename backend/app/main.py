@@ -15,7 +15,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.routers import aluna, contenido, finca, participa
-from app.services.comun import ErrorNegocio
+from app.services.comun import ErrorNegocio, mensaje_validacion
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -79,7 +79,7 @@ async def error_negocio(_: Request, exc: ErrorNegocio):
 async def error_validacion(_: Request, exc: RequestValidationError):
     """Devuelve el primer error en lenguaje claro (la app lo muestra tal cual)."""
     errores = exc.errors()
-    mensaje = str(errores[0].get("msg", "Datos no válidos")).removeprefix("Value error, ") if errores else "Datos no válidos"
+    mensaje = mensaje_validacion(dict(errores[0])) if errores else "Datos no válidos"
     detalle = [{"loc": list(e.get("loc", [])), "msg": str(e.get("msg", ""))} for e in errores]
     return JSONResponse(status_code=422, content={"detail": mensaje, "errores": detalle})
 

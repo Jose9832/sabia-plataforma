@@ -18,15 +18,15 @@ export function Inicio() {
   const esAfro = com === "afro";
 
   const todas: Tarjeta[] = adentro && com === "campesina" ? [
-    ["salud", "Salud", "Primeros auxilios y plantas de la vereda", "#F3DCD2", "#A0522D"],
+    ["salud", "Salud", "Primeros auxilios y plantas de la vereda", "#FCE7E7", "#BE123C"],
     ["finca", "Mi finca", "Semillas, siembra, alertas y cuentas", "#F3ECD1", "#6E5A12"],
     ["memoria", "Memoria", "Voces y saberes de la vereda", "#E6E0F0", "#5E5280"],
-    ["ayuda", "Ayuda", "Puestos de salud, vías y trámites del campo", "#DCE6F0", "#3B5F7D"]
+    ["ayuda", "Ayuda", "Puestos de salud, vías y trámites del campo", "#E1ECF6", "#004B87"]
   ] : adentro ? [
-    ["salud", "Salud", esAfro ? "Partería, plantas y salud comunitaria" : "Decir qué me duele al médico", "#F3DCD2", "#A0522D"],
-    ["participa", "Participa", esAfro ? "Encuentros, investigación e historia afro" : "Conversatorios, encuentros e investigación", "#E2ECE0", "#2F5939"],
+    ["salud", "Salud", esAfro ? "Partería, plantas y salud comunitaria" : "Decir qué me duele al médico", "#FCE7E7", "#BE123C"],
+    ["participa", "Participa", esAfro ? "Encuentros, investigación e historia afro" : "Conversatorios, encuentros e investigación", "#E3F4EC", "#047857"],
     ["memoria", "Memoria", "Voces y podcasts de mi comunidad", "#E6E0F0", "#5E5280"],
-    ["ayuda", "Ayuda", esAfro ? "Derechos y trámites" : "Hospitales, derechos y trámites", "#DCE6F0", "#3B5F7D"]
+    ["ayuda", "Ayuda", esAfro ? "Derechos y trámites" : "Hospitales, derechos y trámites", "#E1ECF6", "#004B87"]
   ] : [
     ["memoria", "Memoria", "Voces que las comunidades comparten", "#E6E0F0", "#5E5280"],
     ["historias", "Historias", "Quién hace lo que hacemos", "#F1E3CF", "#8B5E3C"],

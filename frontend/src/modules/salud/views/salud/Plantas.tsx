@@ -93,7 +93,7 @@ export function Plantas({ variante }: { variante: IdComunidad }) {
     encolar("planta", datos as unknown as Record<string, unknown>);
     setForm(vacio);
     setAbierto(false);
-    aviso(enRed ? "Planta guardada. Gracias por compartir tu saber" : "Sin señal: la planta quedó guardada y se enviará cuando haya internet");
+    aviso(enRed ? "Planta guardada. Gracias por compartir tu saber: se está enviando" : "Sin señal: la planta quedó guardada y se enviará cuando haya internet");
   }
 
   const dictado = (id: "uso" | "preparacion") => (

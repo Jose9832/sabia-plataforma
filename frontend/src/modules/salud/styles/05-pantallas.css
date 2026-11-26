@@ -1,46 +1,10 @@
 /* SABIA · 5. Pantallas (extraído sin cambios de la hoja original v3) */
 /* ---------- 5. PANTALLAS ---------- */
 
-/* Puertas de entrada */
-.puertas { min-height: 100%; display: flex; flex-direction: column; padding: 4px 0 14px; }
-.puertas .logo { text-align: center; color: var(--verde); }
-.puertas .logo svg { width: 58px; height: 58px; }
-.puertas h1 { text-align: center; font-size: 32px; font-weight: 800; letter-spacing: 3px; color: var(--verde); }
-.lema { text-align: center; font-size: 13px; color: var(--texto-suave); line-height: 1.4; margin: 4px 0 18px; }
-.pregunta { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 14px; }
-.puerta {
-  position: relative; flex: 1; min-height: 170px; overflow: hidden; cursor: pointer;
-  display: flex; align-items: center; gap: 20px; padding: 28px 22px; margin-bottom: 16px;
-  border-radius: var(--r-xl); color: #fff;
-  box-shadow: 0 2px 4px rgba(60,35,15,0.12), 0 16px 30px rgba(60,35,15,0.22), inset 0 1px 0 rgba(255,255,255,0.28);
-}
-.puerta:active { transform: scale(.98); }
-.puerta::after { content: ""; position: absolute; right: -24px; bottom: -34px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.08); pointer-events: none; }
-.puerta.adentro { background: linear-gradient(160deg, #3F754B, var(--verde) 55%, #254A2E); }
-.puerta.afuera { background: linear-gradient(160deg, #A36C43, var(--tierra) 55%, #683F24); }
-.puerta .grande svg { width: 56px; height: 56px; }
-.puerta strong { display: block; font-size: 24px; font-weight: 800; margin-bottom: 4px; }
-.puerta small { display: block; font-size: 15px; line-height: 1.35; opacity: .92; }
-.puerta .escuchar { position: absolute; top: 16px; right: 16px; margin: 0; background: rgba(255,255,255,0.92); }
-.puerta .escuchar.hablando { background: #fff; color: var(--verde); animation-name: pulso-claro; }
-.puertas .pie { text-align: center; font-size: 13px; color: var(--texto-suave); }
-
-/* Acceso: comunidad, ingresar, registrarse */
-.cabecera-acceso { display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin: 4px 0 20px; border-radius: 22px; box-shadow: var(--luz); }
-.icono-acceso { width: 54px; height: 54px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.7); }
-.cabecera-acceso small { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; opacity: .8; }
-.cabecera-acceso b { font-size: 18px; }
+/* Formularios */
 .formulario { padding: 18px; border-radius: var(--r-lg); }
 .etiqueta-campo { display: block; font-size: 14px; font-weight: 700; margin: 4px 0 6px; }
 .formulario .campo { font-size: 17px; margin-bottom: 12px; }
-.campo-clave { position: relative; }
-.campo-clave .campo { padding-right: 92px; }
-.ver-clave {
-  position: absolute; right: 8px; top: 8px; height: 38px; padding: 0 14px; cursor: pointer; border: none; border-radius: 10px;
-  font-size: 14px; font-weight: 700; color: var(--verde); background: var(--superficie); box-shadow: var(--sombra);
-}
-.pista-cuentas { margin-top: 16px; line-height: 1.7; }
-.pista-cuentas summary { cursor: pointer; font-weight: 700; color: var(--texto); }
 
 /* Salud */
 .paso-titulo { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; margin: 22px 0 12px; }

@@ -146,7 +146,7 @@ export function SaludAfro() {
       <p className="subtitulo-pantalla">Medicina tradicional, partería y salud comunitaria</p>
       <div className="opciones-grandes" style={{ marginTop: 0 }}>
         <OpcionGrande icono="parteria" fondo="#F7E2D9" color="#8A3B22" titulo="Partería y saberes de las mayores" desc="Gestación, parto y cuidado de la mujer" onClick={() => ir("salud", "parteria")} />
-        <OpcionGrande icono="hoja" fondo="#E2ECE0" color="var(--verde)" titulo="Botiquín de plantas" desc="Remedios caseros y cuándo ir al médico" onClick={() => ir("salud", "plantas")} />
+        <OpcionGrande icono="hoja" fondo="#E2ECE0" color="var(--verde)" titulo="Botiquín ancestral" desc="Plantas, remedios caseros y cuándo ir al médico" onClick={() => ir("salud", "plantas")} />
         <OpcionGrande icono="ruta" fondo="#E8EEF4" color="var(--azul)" titulo="Ruta de salud y derechos" desc="Atención digna y salud de la población afro" onClick={() => ir("salud", "ruta")} />
         <OpcionGrande icono="sabedora" fondo="#F3ECD1" color="#6E5A12" titulo="Sabedoras y agentes" desc="Parteras, sobanderos y promotores" onClick={() => ir("salud", "sabedoras")} />
       </div>

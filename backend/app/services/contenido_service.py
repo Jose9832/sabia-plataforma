@@ -163,5 +163,5 @@ def listar_encuentros(db: Session, usuario: Usuario | None, ventana: Ventana) ->
 def listar_investigaciones(db: Session, usuario: Usuario | None) -> list[Investigacion]:
     todas = list(db.scalars(select(Investigacion).order_by(Investigacion.id)))
     if not usuario or not usuario.comunidad:
-        return todas if not usuario else []
+        return []
     return [i for i in todas if usuario.comunidad.value in i.comunidades]

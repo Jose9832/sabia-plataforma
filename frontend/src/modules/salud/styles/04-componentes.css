@@ -14,7 +14,7 @@
 .selector-cuerpo, .boton-sintoma, .caja-conectar, .formulario, .opcion-reporte {
   background: var(--superficie); border: none; box-shadow: var(--sombra);
 }
-.tarjeta-modulo, .opcion-grande, .boton-sintoma, .historia, .puerta, .opcion-reporte, .lugar-cabecera {
+.tarjeta-modulo, .opcion-grande, .boton-sintoma, .historia, .opcion-reporte, .lugar-cabecera {
   transition: transform .15s var(--curva), box-shadow .15s;
 }
 .tarjeta-modulo:active, .opcion-grande:active, .boton-sintoma:active, .historia:active, .opcion-reporte:active {

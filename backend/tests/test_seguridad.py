@@ -101,3 +101,20 @@ def test_sync_acepta_el_tipo_planta():
     from app.services.sync_service import OPERACIONES
 
     assert "planta" in OPERACIONES
+
+
+def test_errores_de_validacion_salen_en_espanol():
+    from pydantic import ValidationError
+
+    from app.schemas.comunidad import AlertaCrear, GastoCrear
+    from app.services.comun import mensaje_validacion
+
+    with pytest.raises(ValidationError) as e:
+        AlertaCrear(tipo="inexistente", lugar="x")  # type: ignore[arg-type]
+    assert mensaje_validacion(dict(e.value.errors()[0])) == "«tipo» no es una opción válida. Elige una de la lista."
+    with pytest.raises(ValidationError) as e:
+        GastoCrear(client_id="00000000-0000-4000-8000-000000000000", tipo="Abono", monto=0)  # type: ignore[arg-type]
+    assert "monto" in mensaje_validacion(dict(e.value.errors()[0])) and "mayor que 0" in mensaje_validacion(dict(e.value.errors()[0]))
+    with pytest.raises(ValidationError) as e:
+        AlertaCrear(lugar="x")  # type: ignore[call-arg]
+    assert mensaje_validacion(dict(e.value.errors()[0])) == "Falta completar «tipo»."

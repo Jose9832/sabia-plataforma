@@ -32,7 +32,7 @@ from app.schemas.comunidad import (
 from app.schemas.contenido import PlantaCrear, PodcastCrear
 from app.schemas.sync import OperacionSync, PeticionSync, RespuestaSync, ResultadoSync
 from app.services import contenido_service, finca_service, participa_service
-from app.services.comun import ErrorNegocio
+from app.services.comun import ErrorNegocio, mensaje_validacion
 
 
 def _sin_duplicado(fn: Callable) -> Callable:
@@ -61,9 +61,7 @@ OPERACIONES: dict[str, tuple[type[BaseModel], Callable, bool]] = {
 
 
 def _mensaje_validacion(e: ValidationError) -> str:
-    primero = e.errors()[0]
-    msg = str(primero.get("msg", "Datos no válidos"))
-    return msg.removeprefix("Value error, ")
+    return mensaje_validacion(dict(e.errors()[0]))
 
 
 def _procesar(db: Session, usuario: Usuario, op: OperacionSync) -> ResultadoSync:
