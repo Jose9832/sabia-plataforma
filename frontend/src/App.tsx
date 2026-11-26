@@ -24,6 +24,7 @@ import { CustodianPanelScreen } from './screens/CustodianPanelScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { WellnessScreen } from './screens/WellnessScreen';
 import { MyCommunityScreen } from './screens/MyCommunityScreen';
+import { EspacioComunidadScreen } from './screens/EspacioComunidadScreen';
 
 const MainLayout: React.FC = () => {
   const { 
@@ -92,6 +93,9 @@ const MainLayout: React.FC = () => {
         {activeScreen === 'profile' && <ProfileScreen />}
         {activeScreen === 'my_community' && <MyCommunityScreen />}
         {MODULO_BIENESTAR_VISIBLE && activeScreen === 'wellness' && <WellnessScreen />}
+        {activeScreen === 'espacio_indigena' && <EspacioComunidadScreen comunidad="indigena" />}
+        {activeScreen === 'espacio_afro' && <EspacioComunidadScreen comunidad="afro" />}
+        {activeScreen === 'espacio_campesina' && <EspacioComunidadScreen comunidad="campesina" />}
         </ErrorBoundary>
       </main>
 

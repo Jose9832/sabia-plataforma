@@ -366,4 +366,7 @@ export type ActiveScreen =
   | 'ai_lab' 
   | 'custodian' 
   | 'profile' 
-  | 'wellness';
+  | 'wellness'
+  | 'espacio_indigena'
+  | 'espacio_afro'
+  | 'espacio_campesina';

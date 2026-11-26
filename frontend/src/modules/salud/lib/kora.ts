@@ -42,7 +42,7 @@ export const etiquetasContexto: Record<ContextoKora, string> = {
 };
 
 export const chipsKora: Record<ContextoKora, string[]> = {
-  inicio: ["¿Qué es SABIA?", "¿Qué puerta elijo?", "¿Funciona sin internet?", "¿Cómo creo mi cuenta?"],
+  inicio: ["¿Qué es SABIA?", "¿Qué hay en mi comunidad?", "¿Funciona sin internet?", "¿Cómo creo mi cuenta?"],
   afuera: ["¿Qué es SABIA?", "Historia afro", "¿Qué es un microrracismo?", "Encuentros abiertos", "Productos de las comunidades"],
   indigena: ["Me duele algo", "Hospitales en Santa Marta", "Conversatorios", "Reportar un problema", "Relatos de los mayores"],
   afro: ["Señales de alarma en el embarazo", "Plantas para la tos", "Anemia falciforme", "Reportar discriminación", "Historia afro", "Capacitaciones"],
@@ -50,7 +50,7 @@ export const chipsKora: Record<ContextoKora, string[]> = {
 };
 
 /* ---------- Acciones (botón grande que lleva a la sección) ---------- */
-/* donde: "adentro" (necesita cuenta), "afuera" (puerta Conocer) o "cualquiera" */
+/* donde: "adentro" (necesita cuenta), "afuera" (visitante) o "cualquiera" */
 const accion = (texto: string, pantalla: Pantalla, sub: string | null = null, detalle: string | number | null = null,
   donde: "adentro" | "afuera" | "cualquiera" = "adentro", antes?: Partial<Ui>): AccionKora => ({ texto, pantalla, sub, detalle, donde, antes });
 const llamar = (texto: string, numero: string): AccionKora => ({ texto, tel: numero });
@@ -72,17 +72,17 @@ const intenciones: Intencion[] = [
   { claves: ["que es sabia", "para que sirve", "que hace esta app", "que es esto", "sabia"],
     responder: () => ({ texto: "SABIA es una herramienta para que las comunidades indígenas, afrodescendientes y campesinas guarden y compartan sus saberes, cuiden su salud y conozcan sus derechos. Funciona sin internet y cada comunidad decide qué se comparte afuera." }) },
   { claves: ["puerta", "que elijo", "diferencia", "mi comunidad", "entrar"], contextos: ["inicio", "afuera"],
-    responder: () => ({ texto: "Hay dos puertas. «Mi comunidad» es para los miembros de las comunidades: entras con tu número de identificación y contraseña. «Conocer» es para visitantes: muestra lo que las comunidades deciden compartir.",
-      acciones: [accion("Entrar a Mi comunidad", "acceso", null, null, "cualquiera"), accion("Ir a Conocer", "inicio", null, null, "afuera")] }) },
+    responder: () => ({ texto: "Cada comunidad tiene su propio espacio en el menú «Espacios». Si eres integrante verificado, entras con tu cuenta y ves Salud, Participa, Memoria y Ayuda. Si eres visitante, ves lo que la comunidad decide compartir.",
+      acciones: [accion("Iniciar sesión", "acceso", null, null, "cualquiera"), accion("Ver el inicio", "inicio", null, null, "cualquiera")] }) },
   { claves: ["internet", "sin senal", "no hay senal", " senal ", "sin conexion", "offline", "datos moviles", "wifi"],
     responder: () => ({ texto: "Sí, SABIA funciona sin internet. Lo que envíes sin señal (reportes, alertas o inscripciones) queda guardado en el teléfono y se envía solo cuando vuelve la conexión." }) },
   { claves: ["cuenta", "registr", "contrasena", "clave", "crear cuenta", "iniciar sesion", "ingresar"], contextos: ["inicio", "afuera"],
-    responder: () => ({ texto: "Toca «Mi comunidad», elige tu comunidad y luego «Regístrate». Solo necesitas tu nombre, tu número de identificación y una contraseña.",
+    responder: () => ({ texto: "Toca «Iniciar sesión» y luego «Regístrate» en la plataforma. Solo necesitas tu nombre, tu número de identificación y una contraseña.",
       acciones: [accion("Crear mi cuenta", "acceso", null, null, "cualquiera")] }) },
   { claves: ["voz", "leer", "no se leer", "escuchar", "sonido", "audio"],
     responder: () => ({ texto: "Toca el botón con el parlante en cualquier tarjeta y la app te lo lee en voz alta. Aquí conmigo también puedes tocar el micrófono y hacerme la pregunta hablando." }) },
-  { claves: ["salir", "cerrar sesion", "cambiar de puerta", "cambiar puerta"],
-    responder: () => ({ texto: "Puedes salir con el botón de arriba, junto al nombre de tu comunidad.", acciones: [accion("Volver al inicio de SABIA", "puertas", null, null, "cualquiera")] }) },
+  { claves: ["salir", "cerrar sesion"],
+    responder: () => ({ texto: "Puedes cerrar sesión desde el menú de tu perfil, arriba a la derecha.", acciones: [accion("Volver al inicio de SABIA", "puertas", null, null, "cualquiera")] }) },
 
   /* Emergencias: siempre disponibles */
   { claves: ["emergencia", "urgencia", "ambulancia", "123", "grave", "accidente"],
@@ -97,7 +97,7 @@ const intenciones: Intencion[] = [
       if (c === "campesina") return { texto: "Tienes los hospitales de Santa Marta, los puestos de salud rurales (Guachaca, Minca y Taganga) y las brigadas y el transporte.",
         acciones: [accion("Puestos de salud rurales", "ayuda", "directorio", null, "adentro", { filtroLugares: "rurales" }), accion("Hospitales de Santa Marta", "ayuda", "directorio", null, "adentro", { filtroLugares: "ciudad" })] };
       if (c === "indigena") return { texto: "En Ayuda está la lista de hospitales y clínicas de Santa Marta. Toca uno para ver su dirección y el mapa.", acciones: [accion("Ver hospitales", "ayuda", "directorio")] };
-      return { texto: "Los hospitales están en «Mi comunidad» → Ayuda. Si es una emergencia, llama al 123.", acciones: [llamar("Llamar al 123", "123"), accion("Entrar a Mi comunidad", "acceso", null, null, "cualquiera")] };
+      return { texto: "Los hospitales están en el espacio de tu comunidad → Ayuda. Si es una emergencia, llama al 123.", acciones: [llamar("Llamar al 123", "123"), accion("Iniciar sesión", "acceso", null, null, "cualquiera")] };
     } },
   { claves: ["duele", "dolor", "sintoma", "me siento mal", "enfermo", "medico", "fiebre", "mareo"],
     responder: ctx => {
@@ -107,7 +107,7 @@ const intenciones: Intencion[] = [
         acciones: [accion("Primeros auxilios", "salud", "auxilios"), accion("Decir qué me duele al médico", "salud", "decir")] };
       if (c === "afro") return { texto: "En Salud encuentras el botiquín de plantas con cuándo ir al centro de salud, y la ruta de salud con tus derechos. Si es grave, llama al 123.",
         acciones: [accion("Botiquín de plantas", "salud", "plantas"), accion("Ruta de salud y derechos", "salud", "ruta"), llamar("Llamar al 123", "123")] };
-      return { texto: "La sección de Salud está en «Mi comunidad». Si es grave, llama al 123.", acciones: [llamar("Llamar al 123", "123"), accion("Entrar a Mi comunidad", "acceso", null, null, "cualquiera")] };
+      return { texto: "La sección de Salud está en el espacio de tu comunidad. Si es grave, llama al 123.", acciones: [llamar("Llamar al 123", "123"), accion("Iniciar sesión", "acceso", null, null, "cualquiera")] };
     } },
 
   /* Primeros auxilios (respuesta corta segura para todos; guía completa para campesinos) */
@@ -146,7 +146,7 @@ const intenciones: Intencion[] = [
     responder: ctx => adentroCon(ctx)
       ? { texto: `En Ayuda → ${ctx.contexto === "campesina" ? "Reportes y derechos" : "Mis derechos"} puedes contar lo que pasó con un toque y grabar un mensaje. Solo lo ve tu ${comunidades[ctx.sesion!.usuario.comunidad!].autoridad}. Si no hay señal, se envía después.`,
           acciones: [accion("Hacer un reporte", "ayuda", "derechos")] }
-      : { texto: "Los reportes se hacen desde «Mi comunidad» → Ayuda, para que los reciba la autoridad de tu comunidad.", acciones: [accion("Entrar a Mi comunidad", "acceso", null, null, "cualquiera")] } },
+      : { texto: "Los reportes se hacen desde el espacio de tu comunidad → Ayuda, para que los reciba la autoridad de tu comunidad.", acciones: [accion("Iniciar sesión", "acceso", null, null, "cualquiera")] } },
   { claves: ["tramite", "cedula", "documento", "registro civil", "beca", "subsidio", "apoyo", "sisben", " eps ", "afiliacion"],
     responder: () => ({ texto: "En Ayuda → Trámites y apoyos te explicamos qué llevar para cada trámite.", acciones: [accion("Ver trámites", "ayuda", "tramites")] }) },
   { claves: ["tierra", "titulo", "formalizar", " ant ", "credito", "banco agrario", "finagro", "insumos"], contextos: ["campesina"],
@@ -188,7 +188,7 @@ const intenciones: Intencion[] = [
   { claves: ["relato", "mayores", "memoria", "podcast", "youtube", "spotify", "cuento", "historia de"],
     responder: ctx => ({ texto: "En Memoria están los relatos de los mayores guardados en el teléfono, y los podcasts conectados de YouTube o Spotify.", acciones: [accion("Ir a Memoria", "memoria", null, null, ctx.ventana === "afuera" ? "afuera" : "adentro")] }) },
   { claves: ["producto", "comprar", "mochila", "cafe", "cacao", "artesania", "vender"],
-    responder: () => ({ texto: "En Conocer → Historias está quién hace cada producto y su historia. Algunas asociaciones autorizan su contacto para comprar directo, sin intermediarios.", acciones: [accion("Ver historias", "historias", null, null, "afuera")] }) }
+    responder: () => ({ texto: "En el espacio de la comunidad → Historias está quién hace cada producto y su historia. Algunas asociaciones autorizan su contacto para comprar directo, sin intermediarios.", acciones: [accion("Ver historias", "historias", null, null, "afuera")] }) }
 ];
 
 /* Plantas por nombre (solo donde la app las muestra) */

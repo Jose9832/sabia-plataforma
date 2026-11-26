@@ -124,3 +124,11 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(245, 184, 46, 0.7);
 }
+
+/* Secciones de salud de cada comunidad (módulo SABIA): su hoja de estilos es clara.
+   En modo oscuro se muestran sobre una superficie clara para que el texto siga legible. */
+.dark .sabia-modulo {
+  background: #F1F5F9;
+  border-radius: 24px;
+  padding: 20px;
+}

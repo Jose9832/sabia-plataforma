@@ -196,7 +196,10 @@ const RUTAS: Record<ActiveScreen, string> = {
   ai_lab: '/ceiba',
   custodian: '/custodia',
   profile: '/perfil',
-  wellness: '/bienestar'
+  wellness: '/bienestar',
+  espacio_indigena: '/comunidad-indigena',
+  espacio_afro: '/comunidad-afro',
+  espacio_campesina: '/comunidad-campesina'
 };
 
 /** Pantalla (y comunidad abierta) que corresponde a una dirección. Direcciones desconocidas → inicio. */

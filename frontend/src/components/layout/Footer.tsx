@@ -93,6 +93,13 @@ export const Footer: React.FC = () => {
                   Solicitudes de Acceso
                 </button>
               </li>
+              {([['espacio_indigena', 'Espacio indígena'], ['espacio_afro', 'Espacio afrodescendiente'], ['espacio_campesina', 'Espacio campesino']] as const).map(([id, nombre]) => (
+                <li key={id}>
+                  <button onClick={() => setActiveScreen(id)} className="hover:text-[#F5B82E] transition-colors">
+                    {nombre}
+                  </button>
+                </li>
+              ))}
               {MODULO_BIENESTAR_VISIBLE && (
                 <li>
                   <button onClick={() => setActiveScreen('wellness')} className="hover:text-[#F5B82E] transition-colors">

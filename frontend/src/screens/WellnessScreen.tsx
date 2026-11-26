@@ -1,57 +1,21 @@
-import React, { Suspense, lazy, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   HelpCircle,
   AlertTriangle,
   PhoneCall,
   LifeBuoy,
   Lock,
-  HeartPulse,
   WifiOff
 } from 'lucide-react';
 import { useAluna } from '../context/AlunaContext';
-import type { Sesion } from '../modules/salud/data/tipos';
-import type { User, Community } from '../types';
 
-// El módulo de Salud se descarga aparte (y queda en caché para usarse sin internet)
-const SaludModulo = lazy(() => import('../modules/salud/SaludModulo').then(m => ({ default: m.SaludModulo })));
-
-type ComunidadSalud = NonNullable<User['saludComunidad']>;
-
-/* Respaldo sin conexión: misma configuración que guarda el servidor en communities.modulo_salud */
-const MODULO_POR_COMUNIDAD: Record<string, ComunidadSalud> = {
-  comm_sierra: 'indigena',
-  comm_afro: 'afro',
-  comm_campesinos: 'campesina',
-  comm_pescadores: 'campesina',
-  comm_palafitos: 'campesina'
-};
-
-/** Comunidad del módulo de Salud: solo cuenta una membresía VERIFICADA por la custodia. */
-function comunidadDeSalud(user: User, communities: Community[]): ComunidadSalud | null {
-  if (user.saludComunidad) return user.saludComunidad;
-  for (const a of user.affiliations) {
-    if (a.status !== 'verified' || a.role === 'none') continue;
-    const modulo = communities.find(c => c.id === a.communityId)?.saludModulo || MODULO_POR_COMUNIDAD[a.communityId];
-    if (modulo) return modulo;
-  }
-  return null;
-}
-
+/* Canales institucionales de orientación. La salud comunitaria (Salud, Participa, Memoria, Ayuda)
+   vive ahora en el espacio de cada comunidad: ver EspacioComunidadScreen. */
 export const WellnessScreen: React.FC = () => {
-  const { showToast, currentUser, communities, wellnessItems, authToken, isAuthenticated, isOnline, sendWellnessOrientation } = useAluna();
-  const [tab, setTab] = useState<'sabia' | 'canales'>('sabia');
+  const { showToast, currentUser, wellnessItems, isOnline, sendWellnessOrientation } = useAluna();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [modalCanal, setModalCanal] = useState<string | null>(null);
   const [needText, setNeedText] = useState('');
-
-  const comunidad = comunidadDeSalud(currentUser, communities);
-
-  /* Sesión compartida con el módulo: misma cuenta, datos aparte (/api/v1/salud) */
-  const sesionSalud: Sesion | null = useMemo(() => (
-    isAuthenticated && authToken
-      ? { token: authToken, usuario: { id: currentUser.id, nombre: currentUser.name, comunidad } }
-      : null
-  ), [isAuthenticated, authToken, currentUser.id, currentUser.name, comunidad]);
 
   // P1.5: canales del servicio independiente de Bienestar (nunca indexado en SABIA/Ceiba)
   const filtered = activeCategory === 'all' ? wellnessItems : wellnessItems.filter(w => w.category === activeCategory);
@@ -90,7 +54,7 @@ export const WellnessScreen: React.FC = () => {
         </h1>
 
         <p className="text-sm text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
-          Hola, <strong className="text-[#06233B] dark:text-white">{currentUser.name}</strong>. Aquí encuentras primeros auxilios, plantas, derechos y rutas de atención, incluso sin internet.
+          Hola, <strong className="text-[#06233B] dark:text-white">{currentUser.name}</strong>. Aquí solicitas orientación y conoces los canales institucionales. La salud de tu comunidad está en su propio espacio.
         </p>
       </div>
 
@@ -102,49 +66,12 @@ export const WellnessScreen: React.FC = () => {
         </p>
       </div>
 
-      {/* Tabs: módulo SABIA · canales institucionales */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold" role="tablist">
-        {[
-          { id: 'sabia' as const, label: 'Salud comunitaria SABIA', icon: <HeartPulse className="w-4 h-4" /> },
-          { id: 'canales' as const, label: 'Orientación y canales institucionales', icon: <PhoneCall className="w-4 h-4" /> }
-        ].map(t => (
-          <button
-            key={t.id}
-            role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors border inline-flex items-center gap-2 ${
-              tab === t.id
-                ? 'bg-[#004B87] text-white border-[#004B87] font-bold shadow-sm'
-                : 'bg-white dark:bg-[#0D212E] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1E3E54] hover:bg-slate-50 dark:hover:bg-[#132C3E]'
-            }`}
-          >
-            {t.icon}
-            {t.label}
-          </button>
-        ))}
-        {!isOnline && (
-          <span className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold">
-            <WifiOff className="w-3.5 h-3.5" /> Sin conexión · modo local
-          </span>
-        )}
-      </div>
-
-      {tab === 'sabia' && (
-        <section aria-label="Módulo de Salud SABIA" className="space-y-3">
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
-            {comunidad
-              ? <>Entraste como integrante verificado: verás la versión de salud de tu comunidad (<strong className="text-[#06233B] dark:text-white">{comunidad === 'indigena' ? 'indígena' : comunidad === 'afro' ? 'afrodescendiente' : 'campesina y territorial'}</strong>), con lectura en voz alta, dictado y la guía <strong>Ceiba</strong>.</>
-              : <>Tu perfil no tiene una comunidad verificada: puedes explorar la puerta <strong>Conocer</strong>. Para ver la salud de tu comunidad, solicita tu vinculación y espera la validación de su custodia.</>}
-          </p>
-          <Suspense fallback={<div className="p-10 rounded-3xl bg-white dark:bg-[#0D212E] border border-slate-200 dark:border-[#1E3E54] text-xs text-slate-500">Cargando el módulo de salud…</div>}>
-            <SaludModulo sesion={sesionSalud} />
-          </Suspense>
-        </section>
+      {!isOnline && (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-bold">
+          <WifiOff className="w-3.5 h-3.5" /> Sin conexión · modo local
+        </span>
       )}
 
-      {tab === 'canales' && (
-        <>
           <div className="flex items-center gap-2 overflow-x-auto pb-2 text-xs font-semibold">
             {[
               { id: 'all', label: 'Todas las categorías' },
@@ -206,8 +133,6 @@ export const WellnessScreen: React.FC = () => {
               </div>
             ))}
           </div>
-        </>
-      )}
 
       {/* Modal */}
       {modalCanal && (

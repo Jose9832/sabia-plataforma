@@ -35,7 +35,6 @@ export interface Nav {
 }
 
 export interface Ui {
-  comunidadElegida: IdComunidad | null;
   filtroLugares: "ciudad" | "rurales" | "brigadas";
   hospitalAbierto: number | null;
   reporteTipo: string | null;
@@ -68,6 +67,10 @@ export interface MensajeKora { de: "kora" | "persona"; texto: string; acciones?:
 
 interface Estado {
   nav: Nav;
+  /** Espacio de comunidad que se está viendo (ruta /comunidad-…). */
+  comunidadVista: IdComunidad | null;
+  /** La plataforma lo registra: abre su pantalla de inicio de sesión. */
+  pedirSesion: (() => void) | null;
   ui: Ui;
   sesion: Sesion | null;
   modoSinConexion: boolean;
@@ -80,16 +83,16 @@ interface Estado {
   kora: { abierto: boolean; mensajes: MensajeKora[]; saludado: boolean };
 
   ir: (pantalla: Pantalla, sub?: string | null, detalle?: string | number | null) => void;
-  entrar: (ventana: Ventana) => void;
+  /** Abre el espacio de una comunidad: «adentro» si la persona es integrante verificada, «afuera» si no. */
+  abrirEspacio: (comunidad: IdComunidad) => void;
+  setPedirSesion: (fn: (() => void) | null) => void;
   setUi: (cambios: Partial<Ui>) => void;
   aviso: (texto: string) => void;
   mostrarTexto: (texto: string | null) => void;
   alternarRed: () => void;
   setNavegadorEnLinea: (v: boolean) => void;
-  iniciarSesion: (sesion: Sesion, nueva: boolean) => void;
   /** La sesión la gestiona ALUNA: el módulo solo la recibe (o null al cerrar sesión). */
   conectarSesion: (sesion: Sesion | null) => void;
-  cerrarSesion: () => void;
   cargarDatos: () => Promise<void>;
   encolar: (tipo: TipoOperacion, datos: Record<string, unknown>, id?: string) => Operacion | null;
   sincronizar: (silencioso?: boolean) => Promise<void>;
@@ -115,9 +118,11 @@ let iniciadoModulo = false;
 let sincronizandoAhora = false;
 
 export const useApp = create<Estado>()((set, get) => ({
-  nav: { ventana: null, pantalla: "puertas", sub: null, detalle: null, n: 0 },
+  nav: { ventana: "afuera", pantalla: "inicio", sub: null, detalle: null, n: 0 },
+  comunidadVista: null,
+  pedirSesion: null,
   ui: {
-    comunidadElegida: null, filtroLugares: "ciudad", hospitalAbierto: null, reporteTipo: null,
+    filtroLugares: "ciudad", hospitalAbierto: null, reporteTipo: null,
     formAlertaAbierto: false, mesElegido: new Date().getMonth(), parteSel: null, sintomaSel: null
   },
   sesion: null,
@@ -131,15 +136,20 @@ export const useApp = create<Estado>()((set, get) => ({
   kora: { abierto: false, mensajes: [], saludado: false },
 
   ir: (pantalla, sub = null, detalle = null) => {
-    /* En ALUNA, volver a las puertas solo cambia de puerta: la sesión es de la plataforma */
-    set(s => ({ nav: { ...s.nav, pantalla, sub, detalle, n: s.nav.n + 1, ventana: pantalla === "puertas" ? null : s.nav.ventana } }));
+    /* «acceso» y «puertas» vienen de la guía Ceiba: el inicio de sesión es de la plataforma */
+    if (pantalla === "acceso") { get().pedirSesion?.(); return; }
+    const destino: Pantalla = pantalla === "puertas" ? "inicio" : pantalla;
+    set(s => ({ nav: { ...s.nav, pantalla: destino, sub, detalle, n: s.nav.n + 1 } }));
   },
 
-  entrar: ventana => {
-    set(s => ({ nav: { ...s.nav, ventana } }));
-    get().ir("inicio");
+  abrirEspacio: comunidad => {
+    const u = get().sesion?.usuario;
+    const ventana: Ventana = u?.comunidad === comunidad ? "adentro" : "afuera";
+    set(s => ({ comunidadVista: comunidad, nav: { ventana, pantalla: "inicio", sub: null, detalle: null, n: s.nav.n + 1 } }));
     void get().cargarDatos();
   },
+
+  setPedirSesion: fn => set({ pedirSesion: fn }),
 
   setUi: cambios => set(s => ({ ui: { ...s.ui, ...cambios } })),
 
@@ -164,29 +174,7 @@ export const useApp = create<Estado>()((set, get) => ({
     if (v && enLinea(get())) void get().sincronizar(false);
   },
 
-  iniciarSesion: (sesion, nueva) => {
-    guardarLocal("sabia-sesion", sesion);
-    set(s => ({
-      sesion,
-      ui: { ...s.ui, comunidadElegida: null },
-      nav: { ventana: "adentro", pantalla: "inicio", sub: null, detalle: null, n: s.nav.n + 1 },
-      datos: { ...s.datos, cuentas: leerLocal(claveCuentas(sesion), cuentasVacias()) }
-    }));
-    get().aviso(nueva ? "Cuenta creada. Bienvenido a SABIA" : `Bienvenido, ${sesion.usuario.nombre.split(" ")[0]}`);
-    void get().cargarDatos().then(() => get().sincronizar(true));
-  },
-
-  cerrarSesion: () => {
-    guardarLocal("sabia-sesion", null);
-    set(s => ({
-      sesion: null,
-      nav: { ...s.nav, ventana: null },
-      kora: { ...s.kora, saludado: false, mensajes: [] },
-      datos: { ...datosIniciales(), lugares: s.datos.lugares, historias: s.datos.historias }
-    }));
-  },
-
-  /* Descarga (o lee de IndexedDB sin señal) lo que corresponde a la puerta y la comunidad actuales. */
+  /* Descarga (o lee de IndexedDB sin señal) lo que corresponde al espacio y la comunidad actuales. */
   cargarDatos: async () => {
     const s = get();
     const u = s.sesion?.usuario;
@@ -195,8 +183,12 @@ export const useApp = create<Estado>()((set, get) => ({
     const opc = { token: s.sesion?.token, enLinea: enLinea(s), clave };
     const publico = { ...opc, clave: "publico" };
     const ventanaQ = adentro ? "adentro" : "afuera";
+    const vista = s.comunidadVista;
+    /* Desde afuera solo se ve lo que ESA comunidad decidió compartir */
+    const deLaVista = <T extends { comunidad: IdComunidad }>(lista: T[]) =>
+      !adentro && vista ? lista.filter(x => x.comunidad === vista) : lista;
     const visibles = <T extends { comunidad: IdComunidad; visibilidad: string }>(lista: T[]) =>
-      adentro ? lista.filter(x => x.comunidad === u!.comunidad) : lista.filter(x => x.visibilidad === "afuera");
+      adentro ? lista.filter(x => x.comunidad === u!.comunidad) : deLaVista(lista.filter(x => x.visibilidad === "afuera"));
 
     try {
       const [relatos, podcasts, lugares, historias, encuentros] = await Promise.all([
@@ -207,11 +199,11 @@ export const useApp = create<Estado>()((set, get) => ({
         obtener<Encuentro[]>(`/encuentros?ventana=${ventanaQ}`, opc)
       ]);
       const nuevos: Partial<Datos> = {
-        relatos: relatos?.datos ?? visibles(respaldo.relatos),
-        podcasts: podcasts?.datos ?? [],
+        relatos: relatos ? deLaVista(relatos.datos) : visibles(respaldo.relatos),
+        podcasts: deLaVista(podcasts?.datos ?? []),
         lugares: lugares?.datos ?? respaldo.lugares,
-        historias: historias?.datos ?? respaldo.historias,
-        encuentros: encuentros?.datos ?? visibles(respaldo.encuentros)
+        historias: deLaVista(historias?.datos ?? respaldo.historias),
+        encuentros: encuentros ? deLaVista(encuentros.datos) : visibles(respaldo.encuentros)
       };
       if (adentro && u) {
         const [investigaciones, plantas, registros] = await Promise.all([
@@ -241,7 +233,7 @@ export const useApp = create<Estado>()((set, get) => ({
       set(st => ({ datos: { ...st.datos, ...nuevos } }));
     } catch (e) {
       if (e instanceof ErrorApi && e.status === 401) {
-        get().ir("puertas");
+        get().ir("inicio");
         get().aviso("Tu sesión terminó. Entra otra vez con tu cuenta.");
       }
     }
@@ -272,7 +264,7 @@ export const useApp = create<Estado>()((set, get) => ({
       await get().cargarDatos();
     } catch (e) {
       if (e instanceof ErrorApi && e.status === 401) {
-        get().ir("puertas");
+        get().ir("inicio");
         get().aviso("Tu sesión terminó. Entra otra vez con tu cuenta.");
       }
       /* Sin conexión con el servidor: todo sigue guardado en la cola. */
@@ -295,8 +287,10 @@ export const useApp = create<Estado>()((set, get) => ({
   conectarSesion: sesion => {
     const actual = get().sesion;
     if (actual?.token === sesion?.token && actual?.usuario.comunidad === sesion?.usuario.comunidad) return;
+    /* «adentro» solo si la persona es integrante verificada de la comunidad que se está viendo */
+    const ventanaPara = (vista: IdComunidad | null, c?: IdComunidad | null): Ventana => (vista && c === vista ? "adentro" : "afuera");
     if (!sesion) {
-      set(s => ({ sesion: null, nav: { ...s.nav, ventana: null, pantalla: "puertas", n: s.nav.n + 1 },
+      set(s => ({ sesion: null, nav: { ventana: "afuera", pantalla: "inicio", sub: null, detalle: null, n: s.nav.n + 1 },
                   kora: { ...s.kora, saludado: false, mensajes: [] }, datos: datosIniciales() }));
       void get().cargarDatos();
       return;
@@ -304,9 +298,7 @@ export const useApp = create<Estado>()((set, get) => ({
     const cambioDePersona = actual?.usuario.id !== sesion.usuario.id;
     set(s => ({
       sesion,
-      nav: cambioDePersona
-        ? { ventana: sesion.usuario.comunidad ? "adentro" : null, pantalla: sesion.usuario.comunidad ? "inicio" : "puertas", sub: null, detalle: null, n: s.nav.n + 1 }
-        : s.nav,
+      nav: { ventana: ventanaPara(s.comunidadVista, sesion.usuario.comunidad), pantalla: "inicio", sub: null, detalle: null, n: s.nav.n + 1 },
       kora: cambioDePersona ? { ...s.kora, saludado: false, mensajes: [] } : s.kora,
       datos: { ...s.datos, cuentas: leerLocal(claveCuentas(sesion), cuentasVacias()) }
     }));

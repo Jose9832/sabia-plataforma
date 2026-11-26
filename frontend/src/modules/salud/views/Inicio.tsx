@@ -4,17 +4,20 @@ import type { NombreIcono } from "../components/icons/iconos";
 import { comunidades, type Pantalla } from "../data/contenido";
 import { useApp } from "../state/store";
 
-/* ---------- INICIO DE CADA PUERTA ---------- */
+type Tarjeta = [Pantalla & NombreIcono, string, string, string, string];
+
+/* ---------- INICIO DEL ESPACIO DE CADA COMUNIDAD ---------- */
 export function Inicio() {
   const ventana = useApp(s => s.nav.ventana);
   const sesion = useApp(s => s.sesion);
   const ir = useApp(s => s.ir);
+  const vista = useApp(s => s.comunidadVista);
   const adentro = ventana === "adentro";
   const com = sesion?.usuario.comunidad;
   const c = adentro && com ? comunidades[com] : null;
   const esAfro = com === "afro";
 
-  const tarjetas: [Pantalla & NombreIcono, string, string, string, string][] = adentro && com === "campesina" ? [
+  const todas: Tarjeta[] = adentro && com === "campesina" ? [
     ["salud", "Salud", "Primeros auxilios y plantas de la vereda", "#F3DCD2", "#A0522D"],
     ["finca", "Mi finca", "Semillas, siembra, alertas y cuentas", "#F3ECD1", "#6E5A12"],
     ["memoria", "Memoria", "Voces y saberes de la vereda", "#E6E0F0", "#5E5280"],
@@ -29,6 +32,8 @@ export function Inicio() {
     ["historias", "Historias", "Quién hace lo que hacemos", "#F1E3CF", "#8B5E3C"],
     ["aprende", "Aprende", "Historia afro y cómo frenar el racismo", "#F7E2D9", "#8A3B22"]
   ];
+  /* «Aprende» (historia afro y antirracismo) es del espacio afro; en los demás no se muestra */
+  const tarjetas = todas.filter(t => t[0] !== "aprende" || adentro || vista === "afro");
 
   return (
     <>
