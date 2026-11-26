@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAluna } from '../../context/AlunaContext';
+import { MODULO_BIENESTAR_VISIBLE } from '../../config/funciones';
 import { accessService } from '../../services/accessService';
 import { 
   Home, 
@@ -105,14 +106,14 @@ export const Navbar: React.FC = () => {
       desc: `${currentUser.name} · ${currentUser.roleLabel}`,
       icon: <UserCheck className="w-4 h-4 text-slate-600 dark:text-slate-300" /> 
     },
-    { 
-      id: 'wellness', 
-      label: 'Bienestar y Orientación', 
+    ...(MODULO_BIENESTAR_VISIBLE ? [{
+      id: 'wellness' as const,
+      label: 'Bienestar y Orientación',
       desc: 'Salud, derechos y orientación',
-      icon: <HeartHandshake className="w-4 h-4 text-rose-600 dark:text-rose-400" /> 
-    },
-    { 
-      id: 'login', 
+      icon: <HeartHandshake className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+    }] : []),
+    {
+      id: 'login',
       label: 'Iniciar Sesión / Cuenta', 
       desc: 'Autenticación formal y cambio de sesión',
       icon: <LogIn className="w-4 h-4 text-[#004B87] dark:text-sky-400" /> 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAluna } from '../../context/AlunaContext';
+import { MODULO_BIENESTAR_VISIBLE } from '../../config/funciones';
 import { ShieldCheck, LogIn } from 'lucide-react';
 
 export const Footer: React.FC = () => {
@@ -92,11 +93,13 @@ export const Footer: React.FC = () => {
                   Solicitudes de Acceso
                 </button>
               </li>
-              <li>
-                <button onClick={() => setActiveScreen('wellness')} className="hover:text-[#F5B82E] transition-colors">
-                  Orientación y Bienestar (Módulo Independiente)
-                </button>
-              </li>
+              {MODULO_BIENESTAR_VISIBLE && (
+                <li>
+                  <button onClick={() => setActiveScreen('wellness')} className="hover:text-[#F5B82E] transition-colors">
+                    Orientación y Bienestar (Módulo Independiente)
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 

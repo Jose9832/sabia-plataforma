@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { MODULO_BIENESTAR_VISIBLE } from './config/funciones';
 import { AlunaProvider, useAluna } from './context/AlunaContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
@@ -35,7 +36,12 @@ const MainLayout: React.FC = () => {
   const [selectedKnowledgeForDetail, setSelectedKnowledgeForDetail] = useState<KnowledgeItem | null>(null);
   const [selectedKnowledgeForRequest, setSelectedKnowledgeForRequest] = useState<KnowledgeItem | null>(null);
 
-  const handleOpenKnowledge = (k: KnowledgeItem) => {
+  // Con el módulo oculto, quien llegue a /bienestar por un enlace viejo vuelve al inicio
+  useEffect(() => {
+    if (!MODULO_BIENESTAR_VISIBLE && activeScreen === 'wellness') setActiveScreen('welcome');
+  }, [activeScreen, setActiveScreen]);
+
+  const handleOpenKnowledge =(k: KnowledgeItem) => {
     setSelectedKnowledgeForDetail(k);
   };
 
@@ -85,7 +91,7 @@ const MainLayout: React.FC = () => {
         {activeScreen === 'custodian' && <CustodianPanelScreen />}
         {activeScreen === 'profile' && <ProfileScreen />}
         {activeScreen === 'my_community' && <MyCommunityScreen />}
-        {activeScreen === 'wellness' && <WellnessScreen />}
+        {MODULO_BIENESTAR_VISIBLE && activeScreen === 'wellness' && <WellnessScreen />}
         </ErrorBoundary>
       </main>
 
