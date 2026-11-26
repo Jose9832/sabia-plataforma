@@ -1,6 +1,7 @@
 """Autenticación única de la plataforma (ALUNA + módulo de Salud SABIA)."""
 import re
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -18,6 +19,9 @@ ETIQUETAS_IDENTIDAD = {
     "community_member": "Integrante comunitario (por verificar)",
     "org_representative": "Representante de organización",
 }
+# Versión del texto de autorización que se muestra al registrarse (debe coincidir con el frontend).
+# Si cambia el texto, sube la versión: queda guardada junto a la fecha de cada autorización.
+VERSION_POLITICA_DATOS = "2026-11-v1"
 CORREO = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -51,6 +55,9 @@ def registrar(db: Session, datos: dict) -> dict:
     email = (datos.get("email") or "").strip().lower()
     clave = datos.get("password") or ""
     identidad = datos.get("identity") or "visitor"
+    # La autorización debe ser previa, expresa e informada (Ley 1581 de 2012): no se asume ni se omite.
+    if datos.get("acceptDataPolicy") is not True:
+        raise ErrorNegocio("Para crear tu cuenta debes autorizar el tratamiento de tus datos personales.", 422)
     if len(nombre) < 3:
         raise ErrorNegocio("Escribe tu nombre completo.", 422)
     if not CORREO.match(email):
@@ -66,6 +73,7 @@ def registrar(db: Session, datos: dict) -> dict:
         codigo=f"user_{uuid.uuid4().hex[:12]}", email=email, nombre=nombre, identity=identidad,
         role_label=ETIQUETAS_IDENTIDAD[identidad], avatar="/assets/logos/aluna_isotipo.png", organization=(datos.get("organization") or None),
         bio=(datos.get("bio") or "").strip(), is_demo=False, clave_hash=hash_clave(clave),
+        consentimiento_datos_en=datetime.now(timezone.utc), consentimiento_version=VERSION_POLITICA_DATOS,
     )
     db.add(u)
     db.flush()

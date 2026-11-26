@@ -73,3 +73,14 @@ def test_cabeceras_de_seguridad_en_la_api():
     assert r.headers["X-Content-Type-Options"] == "nosniff"
     assert r.headers["X-Frame-Options"] == "DENY"
     assert "Content-Security-Policy" not in r.headers  # la CSP es solo para páginas HTML
+
+
+def test_registro_exige_autorizar_el_tratamiento_de_datos():
+    from app.services import auth_service
+
+    base = {"name": "Laura Gómez", "email": "laura@ejemplo.com", "password": "clave-segura-1", "identity": "visitor"}
+    # La validación ocurre antes de tocar la base de datos: sin autorización no se crea la cuenta.
+    for extra in ({}, {"acceptDataPolicy": False}, {"acceptDataPolicy": "true"}, {"acceptDataPolicy": None}):
+        with pytest.raises(ErrorNegocio) as e:
+            auth_service.registrar(None, {**base, **extra})  # type: ignore[arg-type]
+        assert e.value.status_code == 422 and "autorizar" in e.value.mensaje

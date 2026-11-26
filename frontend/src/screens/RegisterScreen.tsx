@@ -32,6 +32,7 @@ export const RegisterScreen: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [lento, setLento] = useState(false);
+  const [aceptaDatos, setAceptaDatos] = useState(false);
 
   // El servidor gratuito puede tardar en despertar: se avisa para que nadie cierre la página
   useEffect(() => {
@@ -90,6 +91,10 @@ export const RegisterScreen: React.FC = () => {
       setErrorMsg('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
+    if (!aceptaDatos) {
+      setErrorMsg('Para crear tu cuenta debes autorizar el tratamiento de tus datos personales.');
+      return;
+    }
     const esIntegrante = selectedIdentity === 'community_member';
     setEnviando(true);
     const res = await registerAccount({
@@ -99,7 +104,8 @@ export const RegisterScreen: React.FC = () => {
       identity: selectedIdentity,
       organization: organization || undefined,
       communityId: esIntegrante ? selectedCommunityId : undefined,
-      rationale: esIntegrante ? rationale || 'Solicitud de vinculación comunitaria.' : undefined
+      rationale: esIntegrante ? rationale || 'Solicitud de vinculación comunitaria.' : undefined,
+      acceptDataPolicy: true
     });
     setEnviando(false);
     if (!res.ok) {
@@ -273,6 +279,32 @@ export const RegisterScreen: React.FC = () => {
             </div>
           )}
 
+          {/* Autorización de tratamiento de datos personales (Ley 1581 de 2012) */}
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A1924] border border-slate-200 dark:border-[#1E3E54] text-xs space-y-3">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                required
+                checked={aceptaDatos}
+                onChange={e => setAceptaDatos(e.target.checked)}
+                className="mt-0.5 w-4 h-4 shrink-0 accent-[#004B87]"
+              />
+              <span className="text-slate-700 dark:text-slate-200 leading-relaxed">
+                <strong className="text-[#06233B] dark:text-white">Autorizo el tratamiento de mis datos personales</strong> para crear mi cuenta y gestionar mi participación en la plataforma, según lo descrito a continuación.
+              </span>
+            </label>
+            <details className="text-slate-600 dark:text-slate-300 leading-relaxed">
+              <summary className="cursor-pointer font-semibold text-[#004B87] dark:text-aluna-cyan">Ver qué datos se tratan y para qué</summary>
+              <ul className="mt-2 space-y-1.5 list-disc pl-5">
+                <li><strong>Datos:</strong> nombre, correo, identidad de participación, organización (si la indicas) y, si pides vincularte a una comunidad, tu comunidad y el fundamento del vínculo.</li>
+                <li><strong>Finalidad:</strong> crear y proteger tu cuenta, gestionar tus permisos de acceso a los saberes y que la custodia de cada comunidad valide las vinculaciones.</li>
+                <li><strong>Datos de salud:</strong> el módulo de salud se guarda aparte y nunca pasa por Ceiba ni por el repositorio de saberes.</li>
+                <li><strong>Tus derechos:</strong> como titular puedes conocer, actualizar, rectificar y pedir la supresión de tus datos, y revocar esta autorización, conforme a la Ley 1581 de 2012.</li>
+                <li><strong>Responsable:</strong> equipo del proyecto SABIA · Universidad del Magdalena. No vendemos tus datos ni los usamos para publicidad.</li>
+              </ul>
+            </details>
+          </div>
+
           {errorMsg && (
             <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-700 text-rose-800 dark:text-rose-200 font-medium text-xs">
               {errorMsg}
@@ -282,7 +314,7 @@ export const RegisterScreen: React.FC = () => {
           <div className="pt-2 flex justify-end">
             <button
               type="submit"
-              disabled={enviando}
+              disabled={enviando || !aceptaDatos}
               className="px-8 py-3 rounded-full bg-[#004B87] hover:bg-[#003865] disabled:opacity-60 text-white font-bold text-xs shadow-sm transition-colors"
             >
               {enviando ? 'Creando cuenta…' : 'Completar Registro'}

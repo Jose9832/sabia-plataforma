@@ -24,6 +24,8 @@ class RegistroIn(_Base):
     organization: str | None = Field(default=None, max_length=200)
     communityId: str | None = None
     rationale: str | None = Field(default=None, max_length=2000)
+    # Autorización de tratamiento de datos: sin ella no se crea la cuenta
+    acceptDataPolicy: bool = False
 
 
 class Decision(_Base):

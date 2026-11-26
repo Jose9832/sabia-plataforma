@@ -328,6 +328,10 @@ ALTER TABLE users ADD COLUMN is_demo BOOLEAN DEFAULT false NOT NULL;
 
 ALTER TABLE users ADD COLUMN is_technical_admin BOOLEAN DEFAULT false NOT NULL;
 
+ALTER TABLE users ADD COLUMN consentimiento_datos_en TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE users ADD COLUMN consentimiento_version VARCHAR(30);
+
 CREATE TABLE canales_bienestar (
     id VARCHAR(60) NOT NULL, 
     category VARCHAR(30) NOT NULL, 

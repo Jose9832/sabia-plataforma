@@ -32,6 +32,10 @@ class Usuario(Base):
     # Comunidad explícita para el módulo de Salud (si no se fija, se deduce de la membresía verificada).
     comunidad_salud: Mapped[Comunidad | None] = mapped_column(enum_col(Comunidad, "ck_usuario_comunidad"), nullable=True)
     clave_hash: Mapped[str] = mapped_column(String(255))
+    # Autorización de tratamiento de datos (Ley 1581 de 2012): cuándo y bajo qué versión del texto.
+    # Es NULL en las cuentas de demostración y en las creadas antes de existir esta casilla.
+    consentimiento_datos_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    consentimiento_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     memberships: Mapped[list["Membership"]] = relationship(back_populates="user", cascade="all, delete-orphan")

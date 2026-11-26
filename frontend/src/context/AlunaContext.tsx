@@ -59,6 +59,8 @@ export interface RegistroDatos {
   organization?: string;
   communityId?: string;
   rationale?: string;
+  /** Autorización de tratamiento de datos personales (el servidor no crea la cuenta sin ella) */
+  acceptDataPolicy: boolean;
 }
 
 interface Bootstrap {
